@@ -41,13 +41,16 @@ export function rainfallNorm(regionCode: string, month: number): number {
  * Fallback used when the network is unavailable. Blends the regional
  * elevation prior with the seasonal calendar, so it still produces a sensible
  * ordering between regions and between months — just a coarser one.
+ *
+ * Uses the same standard lapse rate (~6.5°C per 1000m) as
+ * lib/regionalRisk.ts, so an offline estimate and a live one stay comparable.
  */
 function fallbackClimate(regionCode: string, now: Date, caseRatePer100k: number): ClimateInput {
   const month = now.getMonth() + 1;
   const season = seasonForMonth(month);
   const norm = rainfallNorm(regionCode, month);
   const region = findRegion(regionCode);
-  const tempBase = region ? Math.max(12, 30 - region.elevationM / 260) : 24;
+  const tempBase = region ? Math.max(12, 30 - (region.elevationM / 1000) * 6.5) : 24;
 
   return {
     rainfallMm: norm * season.intensity,

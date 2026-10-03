@@ -1,63 +1,58 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import i18n from '../i18n';
-import { Card, Empty, IconInfo, IconMap, IconTrend, RiskPill, Sheet, Skeleton } from '../components/ui';
-import { REGIONS, REGION_GRID_POSITION, seasonForMonth } from '../lib/geo';
+import { Card, Empty, IconInfo, IconMap, IconTrend, RiskPill, Sheet } from '../components/ui';
+import { REGIONS, REGION_GRID_POSITION, findRegion, seasonForMonth } from '../lib/geo';
 import type { RiskLevel } from '../lib/redflags';
+import { enrichWithLiveClimate, estimateAllRegions, rankByRisk, type RegionRisk } from '../lib/regionalRisk';
 import { fetchRegionRisk, isSupabaseConfigured, type RegionRiskRow } from '../lib/supabase';
 
-const RISK_ORDER: RiskLevel[] = ['low', 'moderate', 'high', 'emergency'];
+const RISK_ORDER: readonly RiskLevel[] = ['low', 'moderate', 'high', 'emergency'] as const;
+
+function regionName(code: string): string {
+  const r = findRegion(code);
+  if (!r) return code;
+  return i18n.language?.startsWith('am') ? r.nameAm : r.nameEn;
+}
 
 /**
  * Regional risk cartogram.
  *
- * This is deliberately NOT a map of Ethiopia's borders.
+ * NOT a map of Ethiopia's borders, on purpose:
  *
- * Two reasons, one ethical and one practical:
+ *  1. Administrative divisions have been restructured repeatedly (Sidama 2020;
+ *     Central, South and Southwest Ethiopia 2021-2023). Drawing boundaries from
+ *     a possibly-stale dataset onto a health dashboard would tell someone a
+ *     woreda is somewhere it is not, and someone would act on it.
+ *  2. A tiled real map needs ~40MB of tiles and a live connection. A cartogram
+ *     is ~1KB of geometry, renders instantly and works offline — which is the
+ *     condition that matters most for the intended users.
  *
- *  1. Ethiopia's administrative divisions have been repeatedly restructured
- *     (Sidama 2020, Central / South / Southwest Ethiopia 2021-2023). Drawing
- *     boundaries from an out-of-date dataset onto a health dashboard would
- *     misrepresent where a woreda is, and someone would act on it.
- *  2. A tile-based real map would need ~40MB of tiles and a live connection.
- *     A cartogram is ~1KB of geometry, renders instantly, and works offline —
- *     which is the condition that matters most for the intended users.
- *
- * Each region is a tile positioned to approximate its real relative location, so
- * the spatial story (highland core vs hot western lowlands) still reads
- * correctly. Tiles are sized by nothing and coloured only by risk, so no
- * magnitude is implied by area — the same reason census cartograms standardise
- * every unit.
- *
- * Swapping in verified GeoJSON later is a drop-in change to this component: the
- * contract is a region code, a risk level, and an onSelect callback.
+ * Each region is a tile positioned roughly geographically, so the
+ * highland-core vs hot-western-lowland story still reads. No area encodes
+ * magnitude, for the same reason census cartograms standardise every unit.
  */
 function RegionGrid({
-  riskByCode,
+  risks,
   onSelect,
 }: {
-  riskByCode: Map<string, RegionRiskRow>;
+  risks: Map<string, RegionRisk>;
   onSelect: (code: string) => void;
 }) {
   const { t } = useTranslation();
   const am = i18n.language?.startsWith('am');
 
   return (
-    <div
-      className="map-grid"
-      role="group"
-      aria-label={t('a11y.regionMap')}
-    >
+    <div className="map-grid" role="group" aria-label={t('a11y.regionMap')}>
       {REGIONS.map((r) => {
-        const row = riskByCode.get(r.code);
-        const level = row?.risk_level;
-        const suppressed = row?.suppressed ?? false;
+        const risk = risks.get(r.code);
+        const level = risk?.level;
         const pos = REGION_GRID_POSITION[r.code] ?? { col: 1, row: 1 };
         return (
           <button
             key={r.code}
             type="button"
-            className={`map-cell${level ? ` risk-${level}` : ' map-cell-unknown'}${suppressed ? ' map-cell-suppressed' : ''}`}
+            className={`map-cell${level ? ` risk-${level}` : ' map-cell-unknown'}`}
             style={{ gridColumn: pos.col, gridRow: pos.row }}
             onClick={() => onSelect(r.code)}
             aria-label={t('a11y.selectedRegion', {
@@ -66,7 +61,6 @@ function RegionGrid({
             })}
           >
             <span className="map-cell-name">{am ? r.nameAm : r.nameEn}</span>
-            {suppressed ? <span className="map-cell-mark" aria-hidden="true">·</span> : null}
           </button>
         );
       })}
@@ -76,62 +70,61 @@ function RegionGrid({
 
 export function DashboardScreen() {
   const { t } = useTranslation();
-  const am = i18n.language?.startsWith('am');
-  const [rows, setRows] = useState<RegionRiskRow[] | null>(null);
-  const [failed, setFailed] = useState(false);
+  const [risks, setRisks] = useState<Map<string, RegionRisk>>(() => estimateAllRegions());
   const [open, setOpen] = useState<string | null>(null);
+  const [communityCounts, setCommunityCounts] = useState<Map<string, number>>(new Map());
+  const [refining, setRefining] = useState(true);
+  const abort = useRef<AbortController | null>(null);
 
+  // Paint happens synchronously in the useState initialiser above: the map is
+  // never blank and never waits on a network call. Weather and community data
+  // then refine it in place.
   useEffect(() => {
-    let alive = true;
-    if (!isSupabaseConfigured) {
-      setFailed(true);
-      return;
+    abort.current?.abort();
+    const ctrl = new AbortController();
+    abort.current = ctrl;
+
+    void enrichWithLiveClimate(REGIONS, {
+      signal: ctrl.signal,
+      onUpdate: (code, risk) => {
+        setRisks((prev) => new Map(prev).set(code, risk));
+      },
+    }).finally(() => {
+      if (!ctrl.signal.aborted) setRefining(false);
+    });
+
+    // Optional. If a backend exists, its community counts sharpen the estimate.
+    if (isSupabaseConfigured) {
+      void fetchRegionRisk()
+        .then((rows: RegionRiskRow[]) => {
+          if (ctrl.signal.aborted) return;
+          const counts = new Map<string, number>();
+          for (const row of rows) {
+            if (!row.suppressed && row.report_count != null) counts.set(row.region_code, row.report_count);
+          }
+          setCommunityCounts(counts);
+        })
+        .catch(() => {
+          /* optional enrichment; the map stands on its own without it */
+        });
     }
 
-    // A backend that accepts the connection and then stalls is common on a poor
-    // mobile network, and without this the skeleton below would spin forever.
-    // Failing to a message the user can act on beats an eternal loading state.
-    const timer = setTimeout(() => {
-      if (alive) setFailed(true);
-    }, 8000);
-
-    fetchRegionRisk()
-      .then((data) => {
-        if (alive) setRows(data);
-      })
-      .catch(() => {
-        if (alive) setFailed(true);
-      })
-      .finally(() => clearTimeout(timer));
-
-    return () => {
-      alive = false;
-      clearTimeout(timer);
-    };
+    return () => ctrl.abort();
   }, []);
 
-  const byCode = useMemo(() => new Map((rows ?? []).map((r) => [r.region_code, r])), [rows]);
-
-  const ranked = useMemo(
-    () =>
-      [...(rows ?? [])]
-        .filter((r) => !r.suppressed)
-        .sort((a, b) => Number(b.risk_score) - Number(a.risk_score)),
-    [rows],
-  );
+  const ranked = useMemo(() => rankByRisk(risks.values(), 5), [risks]);
 
   const national = useMemo<RiskLevel>(() => {
     if (!ranked.length) return 'low';
-    const total = ranked.reduce((sum, r) => sum + Number(r.risk_score), 0) / ranked.length;
-    return RISK_ORDER.find((l, i) => {
-      const next = RISK_ORDER[i + 1];
-      if (!next) return false;
-      const cuts = { low: 0.25, moderate: 0.5, high: 0.75, emergency: 1.01 } as const;
-      return total < cuts[l];
-    }) ?? 'emergency';
+    const mean = ranked.reduce((s, r) => s + r.score, 0) / ranked.length;
+    if (mean < 0.25) return 'low';
+    if (mean < 0.5) return 'moderate';
+    if (mean < 0.75) return 'high';
+    return 'emergency';
   }, [ranked]);
 
   const season = seasonForMonth(new Date().getMonth() + 1);
+  const hasCommunity = communityCounts.size > 0;
 
   return (
     <div className="page">
@@ -145,19 +138,15 @@ export function DashboardScreen() {
           <div>
             <span className="eyebrow">{t('dashboard.nationalSummary')}</span>
             <div style={{ marginTop: 'var(--sp-2)' }}>
-              {/* Never show a risk band we do not have data for. Defaulting an
-                  empty dataset to "Low risk" reads as reassurance the app has
-                  not earned, which is the wrong thing to invent on a health
-                  screen. */}
-              {ranked.length > 0 ? (
-                <RiskPill level={national} label={t(`result.levels.${national}.label`)} />
-              ) : (
-                <span className="risk-pill risk-unknown">{t('dashboard.noEstimate')}</span>
-              )}
+              <RiskPill level={national} label={t(`result.levels.${national}.label`)} />
             </div>
           </div>
           <IconMap size={26} />
         </div>
+        <p className="card-body">
+          <IconInfo size={13} />{' '}
+          {refining ? t('dashboard.provenance.estimating') : hasCommunity ? t('dashboard.provenance.live') : t('dashboard.provenance.estimated')}
+        </p>
       </Card>
 
       <Card className="section">
@@ -178,23 +167,7 @@ export function DashboardScreen() {
           </div>
         </div>
 
-        {rows === null && !failed ? (
-          <div className="stack stack-sm">
-            <Skeleton height={96} />
-            <Skeleton height={96} />
-          </div>
-        ) : failed ? (
-          /* Distinguish "no backend configured" from "no connection". Telling a
-             user they are offline when the real cause is a missing env var sends
-             them to troubleshoot their Wi-Fi forever. */
-          isSupabaseConfigured ? (
-            <Empty title={t('common.offline')} body={t('common.offlineBody')} />
-          ) : (
-            <Empty title={t('dashboard.notConfigured')} body={t('dashboard.notConfiguredBody')} />
-          )
-        ) : (
-          <RegionGrid riskByCode={byCode} onSelect={setOpen} />
-        )}
+        <RegionGrid risks={risks} onSelect={setOpen} />
       </section>
 
       {ranked.length > 0 ? (
@@ -205,80 +178,81 @@ export function DashboardScreen() {
             </span>
           </div>
           <div className="stack stack-sm">
-            {ranked.slice(0, 5).map((r) => {
-              const region = REGIONS.find((x) => x.code === r.region_code);
-              return (
-                <button
-                  key={r.region_code}
-                  type="button"
-                  className="card row card-row-between"
-                  style={{ width: '100%', textAlign: 'start', cursor: 'pointer' }}
-                  onClick={() => setOpen(r.region_code)}
-                >
-                  <span className="strong small">{region ? (am ? region.nameAm : region.nameEn) : r.region_code}</span>
-                  <RiskPill level={r.risk_level} label={t(`result.levels.${r.risk_level}.short`)} />
-                </button>
-              );
-            })}
+            {ranked.map((r) => (
+              <button
+                key={r.code}
+                type="button"
+                className="card row card-row-between"
+                style={{ width: '100%', textAlign: 'start', cursor: 'pointer' }}
+                onClick={() => setOpen(r.code)}
+              >
+                <span className="strong small">{regionName(r.code)}</span>
+                <RiskPill level={r.level} label={t(`result.levels.${r.level}.short`)} />
+              </button>
+            ))}
           </div>
         </section>
       ) : null}
 
       <Sheet open={open !== null} onClose={() => setOpen(null)} title={t('dashboard.riskNow')}>
-        {open ? <RegionDetail code={open} row={byCode.get(open)} /> : null}
+        {open ? (
+          <RegionDetail
+            code={open}
+            risk={risks.get(open) ?? null}
+            communityCount={communityCounts.get(open) ?? null}
+          />
+        ) : null}
       </Sheet>
     </div>
   );
 }
 
-function RegionDetail({ code, row }: { code: string; row: RegionRiskRow | undefined }) {
+function RegionDetail({ code, risk, communityCount }: { code: string; risk: RegionRisk | null; communityCount: number | null }) {
   const { t } = useTranslation();
   const am = i18n.language?.startsWith('am');
-  const region = REGIONS.find((r) => r.code === code);
+  const region = findRegion(code);
   const name = region ? (am ? region.nameAm : region.nameEn) : code;
-
-  const drivers: string[] = Array.isArray(row?.drivers) ? row!.drivers : [];
   const prep = ['prepNets', 'prepDrain', 'prepKnow'] as const;
 
   return (
     <div className="stack">
       <div className="card-row-between">
         <h3 style={{ fontSize: 'var(--text-lg)' }}>{name}</h3>
-        {row && !row.suppressed ? <RiskPill level={row.risk_level} label={t(`result.levels.${row.risk_level}.short`)} /> : null}
+        {risk ? <RiskPill level={risk.level} label={t(`result.levels.${risk.level}.short`)} /> : null}
       </div>
 
-      {!row ? (
+      {!risk ? (
         <Empty title={t('dashboard.noData')} body={t('dashboard.noDataBody')} />
-      ) : row.suppressed ? (
-        <Empty title={t('dashboard.suppressed')} body={t('dashboard.suppressedBody')} />
       ) : (
         <>
           <Card>
-            <div className="card-row-between">
-              <span className="small muted">{t('dashboard.reportsHere')}</span>
-              <span className="strong tnum">{row.report_count ?? 0}</span>
-            </div>
-            {row.rainfall_mm != null ? (
-              <div className="card-row-between">
-                <span className="small muted">{t('dashboard.trends')}</span>
-                <span className="strong tnum">
-                  {Math.round(Number(row.rainfall_mm))} / {Math.round(Number(row.rainfall_norm_mm ?? 0))} mm
-                </span>
+            <span className="eyebrow">{t('dashboard.riskNow')}</span>
+            <div className="stat-grid" style={{ marginTop: 'var(--sp-3)' }}>
+              <div className="stat">
+                <span className="stat-value tnum">{Math.round(risk.score * 100)}</span>
+                <span className="stat-label">{t('dashboard.riskIndex')}</span>
               </div>
-            ) : null}
+              <div className="stat">
+                <span className="stat-value tnum">{risk.breakdown ? Math.round(risk.breakdown.parts.temperature * 100) : 0}</span>
+                <span className="stat-label">{t('dashboard.driverTempShort')}</span>
+              </div>
+              <div className="stat">
+                <span className="stat-value tnum">{risk.breakdown ? Math.round(risk.breakdown.parts.elevation * 100) : 0}</span>
+                <span className="stat-label">{t('dashboard.driverElevShort')}</span>
+              </div>
+            </div>
+            <p className="card-body">
+              {risk.live ? t('dashboard.provenance.live') : t('dashboard.provenance.estimated')}
+            </p>
           </Card>
 
-          {drivers.length > 0 ? (
-            <div>
-              <span className="eyebrow">{t('dashboard.drivers')}</span>
-              <ul className="stack stack-sm" style={{ marginTop: 'var(--sp-3)' }}>
-                {drivers.map((d, i) => (
-                  <li key={i} className="small">
-                    • {t(`dashboard.${d}`, { defaultValue: d })}
-                  </li>
-                ))}
-              </ul>
-            </div>
+          {communityCount != null ? (
+            <Card>
+              <div className="card-row-between">
+                <span className="small muted">{t('dashboard.reportsHere')}</span>
+                <span className="strong tnum">{communityCount}</span>
+              </div>
+            </Card>
           ) : null}
 
           <div>

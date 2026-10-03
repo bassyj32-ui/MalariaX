@@ -74,8 +74,22 @@ Badges and streaks are earned locally and immediately, independent of the
 network.
 
 ### Data — public regional risk map
-Regional risk from a transparent weighted model, plus a seasonal notice and
-preparation steps. Fully public, no login, aggregate only.
+Regional risk for all 14 regions, colour-coded on a cartogram, plus a seasonal
+notice and preparation steps. Fully public, no login.
+
+**This works with no backend at all.** Risk is driven by temperature, rainfall,
+humidity and elevation — all derivable from a free weather API (Open-Meteo, no
+key, no account) plus a static table. The app paints the whole map instantly
+from the Ethiopian transmission calendar and elevation, then refines each region
+with live weather as it arrives.
+
+A database is only needed for one thing: **case reports from other people.** That
+is genuinely valuable and genuinely additive, so it is optional. Add a backend
+later and community counts simply sharpen the estimates.
+
+The distinction matters, so the UI states which kind of number you are looking
+at — "estimated from weather and altitude, no case reports yet" versus "based on
+current weather".
 
 ### Ask — prevention questions
 Multilingual prevention Q&A through a server-side proxy, with a curated offline
@@ -117,6 +131,28 @@ just in intent.
   control comes from the policies in `supabase/migrations/0002_rls_and_views.sql`.
 
 Review the SQL before deploying. It is the actual security boundary.
+
+---
+
+## Running it without a backend
+
+**You do not need to buy anything to run this.** With no Supabase project:
+
+| Feature | Works? |
+|---|---|
+| Symptom check + instant verdict | Yes — pure rules, no network |
+| Prevention Q&A | Yes — offline curated answers |
+| Badges and streaks | Yes — localStorage |
+| Reporting a case | Yes — queued in IndexedDB on the phone |
+| **Regional risk map** | **Yes — computed on-device from weather + elevation** |
+| Community case rates | No — needs a backend |
+
+Reports taken without a backend are kept safely on the device. Add a backend
+later and the queue syncs itself; nothing is lost either way.
+
+When you are ready, see [Getting started](#getting-started). Supabase's free
+tier needs no credit card, but it pauses inactive projects after about a week,
+so budget $25/mo before this has real users.
 
 ---
 

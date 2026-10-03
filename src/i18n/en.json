@@ -187,6 +187,14 @@
     "national": "Ethiopia",
     "legend": "Risk level",
     "riskNow": "Estimated risk",
+    "riskIndex": "risk index",
+    "driverTempShort": "temp fit",
+    "driverElevShort": "lowland",
+    "provenance": {
+      "estimated": "Estimated from weather and altitude. No case reports yet.",
+      "live": "Based on current weather for this region.",
+      "estimating": "Updating with current weather…"
+    },
     "trends": "Reports over time",
     "reports": "reports",
     "lastUpdated": "Updated {{when}}",

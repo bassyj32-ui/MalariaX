@@ -102,9 +102,21 @@ try {
 
   console.log('— dashboard / cartogram —');
   await page.getByRole('tab', { name: /Data/i }).click();
-  await page.waitForTimeout(1200);
+  await page.waitForTimeout(1500);
   await shot(page, '06-dashboard');
+  await page.screenshot({ path: join(OUT, '06b-dashboard-full.png'), fullPage: true });
+  console.log('  shot 06b (full page)');
   await checkOverflow(page, 'dashboard');
+
+  console.log('— region detail sheet —');
+  const cell = page.locator('.map-cell').first();
+  await cell.click();
+  await page.waitForTimeout(500);
+  await shot(page, '06c-region-detail');
+  const sheetOpen = await page.locator('.sheet').count();
+  if (!sheetOpen) problems.push('region detail sheet did not open on tap');
+  await page.getByRole('button', { name: /Close/i }).first().click();
+  await page.waitForTimeout(300);
 
   console.log('— Amharic —');
   // Reload so we start from the launcher. The previous pass left an emergency
