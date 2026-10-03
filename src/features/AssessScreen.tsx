@@ -1,7 +1,7 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import i18n from '../i18n';
-import { Banner, Card, IconAlert, IconArrow, IconInfo, IconPhone, IconShield, RiskPill, RiskRibbon } from '../components/ui';
+import { Banner, Card, IconAlert, IconArrow, IconBack, IconInfo, IconPhone, IconShield, RiskPill, RiskRibbon } from '../components/ui';
 import { CareSheet } from './CareSheet';
 import { getClimate } from '../lib/climate';
 import { REGIONS, findRegion } from '../lib/geo';
@@ -254,7 +254,10 @@ function SymptomRow({
     <div className="symptom" data-danger={isDanger} data-set={value !== 'none'}>
       <div className="symptom-head">
         <span className="symptom-name">{label}</span>
-        <span className={`symptom-state sev-${value}`}>{t(`assess.severity.${value}`)}</span>
+        {/* Only shown once something is actually selected. Echoing "None" on all
+            eight rows up front reads as noise and implies the user has already
+            answered every question, which they have not. */}
+        {value === 'none' ? null : <span className={`symptom-state sev-${value}`}>{t(`assess.severity.${value}`)}</span>}
       </div>
       <div className="severity" role="radiogroup" aria-label={t('a11y.changeSeverity', { symptom: label })}>
         {SEVERITIES.map((sev) => (
@@ -286,6 +289,23 @@ function ResultView({ onReset, onBack }: { onReset: () => void; onBack?: () => v
   const { t } = useTranslation();
   const { result, answer, setTab } = useApp();
   const [careOpen, setCareOpen] = useState(false);
+  const topRef = useRef<HTMLDivElement>(null);
+
+  // The form is a long page. When it is replaced by the result, the viewport is
+  // still scrolled down where the submit button was, which hides the verdict
+  // under the sticky header — so a user with an EMERGENCY result would land on
+  // the middle of the danger-sign list instead of the verdict itself. Always
+  // jump to the top when the result appears.
+  useEffect(() => {
+    // Guarded: scrollIntoView is absent on some older Android WebViews, which
+    // are a large share of the devices this app targets. Losing the scroll reset
+    // is survivable; throwing during render is not.
+    if (typeof topRef.current?.scrollIntoView === 'function') {
+      topRef.current.scrollIntoView({ block: 'start' });
+    }
+    window.scrollTo(0, 0);
+  }, []);
+
   if (!result) return null;
 
   const level = result.level;
@@ -296,6 +316,7 @@ function ResultView({ onReset, onBack }: { onReset: () => void; onBack?: () => v
 
   return (
     <div className="page">
+      <div ref={topRef} />
       {isEmergency ? (
         <div style={{ marginBottom: 'var(--sp-4)' }}>
           <Banner tone="strong" icon={<IconAlert size={18} />}>
@@ -380,7 +401,7 @@ function ResultView({ onReset, onBack }: { onReset: () => void; onBack?: () => v
       <div className="section stack">
         {onBack ? (
           <button className="btn btn-ghost btn-block" onClick={onBack}>
-            <IconArrow size={15} /> {t('common.back')}
+            <IconBack size={15} /> {t('common.back')}
           </button>
         ) : null}
 

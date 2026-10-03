@@ -15,7 +15,21 @@ import { CLIENT_HASH_HEADER, getClientHash } from './identity';
 const url = import.meta.env.VITE_SUPABASE_URL;
 const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-export const isSupabaseConfigured = Boolean(url && anonKey);
+/**
+ * Shape check, not just a truthiness check.
+ *
+ * `.env.example` ships placeholder values, and a developer who copies it to
+ * `.env` without editing gets non-empty strings that would otherwise make the
+ * app believe it has a backend, point it at `your-project.supabase.co`, and then
+ * show a network error instead of the helpful "not connected yet" message.
+ */
+export const isSupabaseConfigured = Boolean(
+  url &&
+    anonKey &&
+    /\.supabase\.(co|in)$/i.test(url) &&
+    !/^your-/i.test(url) &&
+    !/^your-/i.test(anonKey),
+);
 
 export interface ReportRow {
   client_hash: string;

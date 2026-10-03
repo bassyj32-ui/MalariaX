@@ -23,10 +23,14 @@ export type { ReportRow };
 
 /**
  * Mirrors `isSupabaseConfigured` without importing the client, so a queue check
- * stays synchronous and cheap.
+ * stays synchronous and cheap. The URL shape test matters here too: with
+ * placeholder env values the app should queue reports rather than repeatedly
+ * failing to reach a project that does not exist.
  */
 function configured(): boolean {
-  return Boolean(import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY);
+  const url = import.meta.env.VITE_SUPABASE_URL;
+  const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  return Boolean(url && key && /\.supabase\.(co|in)$/i.test(url) && !/^your-/i.test(url) && !/^your-/i.test(key));
 }
 
 export interface QueuedReport extends ReportRow {

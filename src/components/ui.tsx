@@ -189,6 +189,10 @@ export const IconAlert = (p: IconProps) =>
 
 export const IconArrow = (p: IconProps) => svg(<><path d="M5 12h14M13 6l6 6-6 6" /></>, p);
 
+/** Back must point the way you came from. Reusing the forward chevron here
+ *  pointed right on a "Back" control, which reads as "continue". */
+export const IconBack = (p: IconProps) => svg(<><path d="M19 12H5M11 18l-6-6 6-6" /></>, p);
+
 export const IconShield = (p: IconProps) =>
   svg(<><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><path d="M9 12l2 2 4-4" /></>, p);
 

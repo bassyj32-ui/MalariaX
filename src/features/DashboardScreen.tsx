@@ -87,15 +87,26 @@ export function DashboardScreen() {
       setFailed(true);
       return;
     }
+
+    // A backend that accepts the connection and then stalls is common on a poor
+    // mobile network, and without this the skeleton below would spin forever.
+    // Failing to a message the user can act on beats an eternal loading state.
+    const timer = setTimeout(() => {
+      if (alive) setFailed(true);
+    }, 8000);
+
     fetchRegionRisk()
       .then((data) => {
         if (alive) setRows(data);
       })
       .catch(() => {
         if (alive) setFailed(true);
-      });
+      })
+      .finally(() => clearTimeout(timer));
+
     return () => {
       alive = false;
+      clearTimeout(timer);
     };
   }, []);
 
@@ -134,7 +145,15 @@ export function DashboardScreen() {
           <div>
             <span className="eyebrow">{t('dashboard.nationalSummary')}</span>
             <div style={{ marginTop: 'var(--sp-2)' }}>
-              <RiskPill level={national} label={t(`result.levels.${national}.label`)} />
+              {/* Never show a risk band we do not have data for. Defaulting an
+                  empty dataset to "Low risk" reads as reassurance the app has
+                  not earned, which is the wrong thing to invent on a health
+                  screen. */}
+              {ranked.length > 0 ? (
+                <RiskPill level={national} label={t(`result.levels.${national}.label`)} />
+              ) : (
+                <span className="risk-pill risk-unknown">{t('dashboard.noEstimate')}</span>
+              )}
             </div>
           </div>
           <IconMap size={26} />

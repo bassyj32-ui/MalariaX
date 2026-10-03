@@ -258,6 +258,14 @@ ol {
   padding-left: var(--sp-3);
 }
 
+/* Deliberately neutral, and outside the four-step risk scale so it can never be
+   mistaken for a real reading. */
+.risk-unknown {
+  --risk-bg: var(--sunken);
+  --risk-fg: var(--ink-3);
+  --risk-solid: var(--ink-4);
+}
+
 .risk-low {
   --ribbon: var(--risk-low);
   --risk-bg: var(--risk-low-soft);
@@ -346,6 +354,9 @@ ol {
   font-size: var(--text-base);
   font-weight: var(--weight-semibold);
   border: 1px solid transparent;
+  /* The ambulance action is an <a href="tel:">, which would otherwise keep the
+     browser's underline and look like a stray artefact on a button. */
+  text-decoration: none;
   transition: background var(--dur-fast) var(--ease-out),
     border-color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
   text-align: center;
@@ -538,9 +549,16 @@ ol {
   color: var(--ink);
 }
 
+/* An unselected "None" should not look like an active answer. Keeping it quiet
+   means the one row a user has actually touched is the only one with a raised
+   pill, so their eye goes straight to what they chose. */
 .severity-btn[data-sev='none'][aria-pressed='true'] {
-  color: var(--ink-3);
+  background: transparent;
+  box-shadow: none;
+  color: var(--ink-4);
+  font-weight: var(--weight-medium);
 }
+
 .severity-btn[data-sev='mild'][aria-pressed='true'] {
   color: var(--risk-moderate);
 }

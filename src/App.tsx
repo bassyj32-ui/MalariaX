@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { AssessScreen } from './features/AssessScreen';
 import { AskScreen } from './features/AskScreen';
 import { ReportScreen } from './features/ReportScreen';
-import { Banner, Card, IconArrow, IconAward, IconCheck, IconMap, IconReport, IconShield, Skeleton } from './components/ui';
+import { Banner, Card, IconArrow, IconAward, IconBack, IconCheck, IconMap, IconReport, IconShield, Skeleton } from './components/ui';
 import { TopBar } from './components/TopBar';
 import { pendingCount, startAutoSync, syncQueue } from './lib/offline';
 import { useApp, type TabKey } from './store/app';
@@ -116,7 +116,7 @@ function CheckTab() {
       <div className="view-enter">
         <div className="page" style={{ paddingBottom: 0 }}>
           <button className="btn btn-ghost btn-sm" onClick={() => setCheckView('home')}>
-            <IconArrow size={14} /> {t('common.back')}
+            <IconBack size={14} /> {t('common.back')}
           </button>
         </div>
         <AssessScreen onBack={() => setCheckView('home')} />
@@ -129,7 +129,7 @@ function CheckTab() {
       <div className="view-enter">
         <div className="page" style={{ paddingBottom: 0 }}>
           <button className="btn btn-ghost btn-sm" onClick={() => setCheckView('home')}>
-            <IconArrow size={14} /> {t('common.back')}
+            <IconBack size={14} /> {t('common.back')}
           </button>
         </div>
         <AskScreen />

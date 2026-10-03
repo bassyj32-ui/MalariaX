@@ -58,6 +58,13 @@ if (!window.scrollTo) {
   window.scrollTo = (() => {}) as typeof window.scrollTo;
 }
 
+// jsdom implements neither of these. The component guards them too, because some
+// older Android WebViews genuinely lack scrollIntoView — which is most of the
+// devices this app is actually for.
+if (!Element.prototype.scrollIntoView) {
+  Element.prototype.scrollIntoView = function scrollIntoView() {};
+}
+
 afterEach(() => {
   cleanup();
 });
