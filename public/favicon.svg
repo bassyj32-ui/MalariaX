@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="MalariaX">
+  <!--
+    Mark: a mosquito silhouette crossed by a risk ribbon.
+
+    The ribbon is the same four-step language used across the app (low to
+    emergency); here it is cut diagonally so the mark reads as both a prevention
+    slash and a data chart at 16px.
+  -->
+  <rect width="64" height="64" rx="14" fill="#0F766E"/>
+
+  <!-- ribbon bands, low to emergency -->
+  <g clip-path="url(#r)">
+    <rect x="0" y="0" width="22" height="64" fill="#0E9F6E"/>
+    <rect x="22" y="0" width="15" height="64" fill="#D97706"/>
+    <rect x="37" y="0" width="13" height="64" fill="#EA580C"/>
+    <rect x="50" y="0" width="14" height="64" fill="#DC2626"/>
+  </g>
+
+  <!-- prevention slash -->
+  <path d="M14 52 L50 12" stroke="#F7F6F3" stroke-width="7" stroke-linecap="round"/>
+  <path d="M14 52 L50 12" stroke="#0F766E" stroke-width="2" stroke-linecap="round" opacity="0.25"/>
+
+  <defs>
+    <clipPath id="r">
+      <rect width="64" height="64" rx="14"/>
+    </clipPath>
+  </defs>
+</svg>

@@ -1,0 +1,184 @@
+/* ==========================================================================
+   MalariaX design tokens
+   --------------------------------------------------------------------------
+   Concept: "field clinic instrument" — the precision of a Linear-style
+   interface wrapped in the visual logic of point-of-care health equipment.
+   High contrast, unambiguous status colour, generous touch targets, and
+   essentially no decorative motion. Every status colour is reused in exactly
+   one semantic role so a colour never means two things.
+   ========================================================================== */
+
+:root {
+  /* --- Neutrals ---------------------------------------------------------- */
+  --ink: #0b1220;
+  --ink-2: #334155;
+  --ink-3: #64748b;
+  --ink-4: #94a3b8;
+
+  --surface: #f7f6f3;
+  --raised: #ffffff;
+  --sunken: #efeeea;
+  --border: #e3e1dc;
+  --border-strong: #cfccc4;
+
+  /* --- Brand ------------------------------------------------------------- */
+  --brand: #0f766e;
+  --brand-strong: #115e59;
+  --brand-soft: #d6f2ee;
+  --brand-ink: #0b3f3a;
+
+  /* --- Risk scale. Four hues, four meanings, never reused. --------------- */
+  --risk-low: #0e9f6e;
+  --risk-low-soft: #dcf5ea;
+  --risk-moderate: #d97706;
+  --risk-moderate-soft: #fdeeda;
+  --risk-high: #ea580c;
+  --risk-high-soft: #ffe8dc;
+  --risk-emergency: #dc2626;
+  --risk-emergency-soft: #fde5e5;
+
+  --risk-low-ink: #05543b;
+  --risk-moderate-ink: #7c3d05;
+  --risk-high-ink: #8a2f04;
+  --risk-emergency-ink: #8c1414;
+
+  /* --- Typography -------------------------------------------------------- */
+  --font-ui: 'Inter', 'Noto Sans Ethiopic', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-am: 'Noto Sans Ethiopic', 'Inter', system-ui, sans-serif;
+  /* Latin and Ethiopic faces sit at different optical sizes; Amharic needs a
+     touch more room to breathe than Inter at the same px value. */
+  --font-stack: var(--font-ui);
+
+  --text-xs: 0.75rem;    /* 12px captions */
+  --text-sm: 0.8125rem;  /* 13px small */
+  --text-base: 0.9375rem;/* 15px body */
+  --text-md: 1.0625rem;  /* 17px emphasised body */
+  --text-lg: 1.25rem;    /* 20px card title */
+  --text-xl: 1.5rem;     /* 24px page title */
+  --text-2xl: 1.9375rem; /* 31px hero */
+  --text-3xl: 2.5rem;    /* 40px display */
+
+  --leading-tight: 1.15;
+  --leading-snug: 1.3;
+  --leading-normal: 1.55;
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  /* --- Space ------------------------------------------------------------- */
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-5: 1.25rem;
+  --sp-6: 1.5rem;
+  --sp-8: 2rem;
+  --sp-10: 2.5rem;
+  --sp-12: 3rem;
+
+  /* --- Radii & elevation -------------------------------------------------
+     Restrained. Instrument-like panels have crisp corners; only pills and
+     the bottom sheet are fully round. */
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 14px;
+  --r-xl: 20px;
+  --r-full: 999px;
+
+  --shadow-sm: 0 1px 2px rgba(11, 18, 32, 0.05);
+  --shadow-md: 0 2px 8px rgba(11, 18, 32, 0.07);
+  --shadow-lg: 0 8px 28px rgba(11, 18, 32, 0.12);
+  --shadow-sheet: 0 -8px 32px rgba(11, 18, 32, 0.16);
+
+  /* --- Motion ------------------------------------------------------------ */
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --dur-fast: 120ms;
+  --dur-base: 180ms;
+
+  /* --- Layout ------------------------------------------------------------ */
+  --tabbar-h: 62px;
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-t: env(safe-area-inset-top, 0px);
+  --shell-max: 27rem; /* 432px — comfortable one-handed column on any phone */
+}
+
+/* ==========================================================================
+   Dark mode
+   Backgrounds deepen, but risk hues are LIGHTENED rather than reused: the same
+   teal-on-white that reads as "low risk" becomes unreadable as dark teal on
+   near-black. Status must stay legible in both themes.
+   ========================================================================== */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #f1f5f9;
+    --ink-2: #cbd5e1;
+    --ink-3: #94a3b8;
+    --ink-4: #64748b;
+
+    --surface: #0b1220;
+    --raised: #131c2e;
+    --sunken: #080e1a;
+    --border: #24314a;
+    --border-strong: #33415e;
+
+    --brand: #2dd4bf;
+    --brand-strong: #5eead4;
+    --brand-soft: #10322f;
+    --brand-ink: #c7f5ef;
+
+    --risk-low: #34d399;
+    --risk-low-soft: #0d2f26;
+    --risk-moderate: #fbbf24;
+    --risk-moderate-soft: #33240a;
+    --risk-high: #fb923c;
+    --risk-high-soft: #3a1c0a;
+    --risk-emergency: #f87171;
+    --risk-emergency-soft: #3d1414;
+
+    --risk-low-ink: #a7f3d0;
+    --risk-moderate-ink: #fde68a;
+    --risk-high-ink: #fed7aa;
+    --risk-emergency-ink: #fecaca;
+
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.5);
+    --shadow-lg: 0 8px 28px rgba(0, 0, 0, 0.6);
+    --shadow-sheet: 0 -8px 32px rgba(0, 0, 0, 0.7);
+  }
+}
+
+/* Explicit override, so the settings toggle can pin a theme rather than only
+   following the OS. Set on <html data-theme="light|dark">. */
+:root[data-theme='light'] {
+  color-scheme: light;
+}
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --ink: #f1f5f9;
+  --ink-2: #cbd5e1;
+  --ink-3: #94a3b8;
+  --ink-4: #64748b;
+  --surface: #0b1220;
+  --raised: #131c2e;
+  --sunken: #080e1a;
+  --border: #24314a;
+  --border-strong: #33415e;
+  --brand: #2dd4bf;
+  --brand-strong: #5eead4;
+  --brand-soft: #10322f;
+  --brand-ink: #c7f5ef;
+  --risk-low: #34d399;
+  --risk-low-soft: #0d2f26;
+  --risk-moderate: #fbbf24;
+  --risk-moderate-soft: #33240a;
+  --risk-high: #fb923c;
+  --risk-high-soft: #3a1c0a;
+  --risk-emergency: #f87171;
+  --risk-emergency-soft: #3d1414;
+  --risk-low-ink: #a7f3d0;
+  --risk-moderate-ink: #fde68a;
+  --risk-high-ink: #fed7aa;
+  --risk-emergency-ink: #fecaca;
+}

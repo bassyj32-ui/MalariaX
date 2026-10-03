@@ -1,0 +1,19 @@
+# Normalise line endings so the repo does not churn between CRLF and LF
+# depending on which OS a contributor clones on.
+* text=auto eol=lf
+
+# Windows-only scripts must keep CRLF.
+*.ps1  text eol=crlf
+*.bat  text eol=crlf
+*.cmd  text eol=crlf
+
+# Binary assets must never be touched.
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.webp binary
+*.ico  binary
+*.woff2 binary
+
+# Lockfiles: keep LF so npm does not rewrite them.
+package-lock.json text eol=lf

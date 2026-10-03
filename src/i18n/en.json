@@ -1,0 +1,279 @@
+{
+  "app": {
+    "name": "MalariaX",
+    "tagline": "Know your risk. Protect your community."
+  },
+  "nav": {
+    "check": "Check",
+    "report": "Report",
+    "dashboard": "Data"
+  },
+  "common": {
+    "continue": "Continue",
+    "back": "Back",
+    "cancel": "Cancel",
+    "close": "Close",
+    "save": "Save",
+    "retry": "Try again",
+    "loading": "Checking…",
+    "offline": "You are offline",
+    "offlineBody": "Your answer is ready and your report will upload when you reconnect.",
+    "optional": "optional",
+    "required": "required",
+    "learnMore": "Learn more"
+  },
+  "home": {
+    "greeting": "Hello",
+    "subtitle": "Are you or someone you know unwell? Start here.",
+    "checkSelf": "Check symptoms",
+    "checkSelfBody": "Answer a few questions about fever, chills and how you feel.",
+    "checkArea": "Check your area",
+    "checkAreaBody": "See the malaria risk where you live, right now.",
+    "askQuestion": "Ask a question",
+    "askQuestionBody": "Prevention, symptoms and treatment, in your language.",
+    "reportCase": "Report a case",
+    "reportCaseBody": "Help your community by sharing what is happening locally.",
+    "yourBadges": "Your progress"
+  },
+  "assess": {
+    "title": "Symptom check",
+    "subtitle": "Tick what applies. This takes about a minute.",
+    "forWhom": "Who is this about?",
+    "adult": "Myself (adult)",
+    "child": "A child under 12",
+    "symptomSection": "Symptoms",
+    "childNote": "Children who are unwell need to be seen quickly. Answer carefully and read the warning signs on the result.",
+    "regionWhy": "Your region is used to check local weather and reported cases. It is never linked to your name.",
+    "ageLabel": "How long have these symptoms lasted?",
+    "ageNone": "Started today",
+    "age1": "1 day",
+    "age2": "2 days",
+    "age3": "3 days",
+    "age4": "4 days",
+    "age7": "1 week",
+    "age14": "2 weeks or more",
+    "soughtCare": "Have you been to a health center for this?",
+    "careYes": "Yes",
+    "careNo": "No",
+    "carePending": "Planning to",
+    "submit": "See my risk",
+    "submitting": "Working out your risk…",
+    "selectOne": "Select at least one symptom",
+    "reset": "Start over",
+    "symptoms": {
+      "fever": "Fever",
+      "chills": "Chills / shivering",
+      "headache": "Headache",
+      "sweating": "Heavy sweating",
+      "nausea": "Nausea",
+      "vomiting": "Vomiting",
+      "weakness": "Extreme weakness",
+      "paleEyes": "Pale inside the eyes"
+    },
+    "severity": {
+      "none": "None",
+      "mild": "Mild",
+      "moderate": "Moderate",
+      "severe": "Severe"
+    }
+  },
+  "result": {
+    "title": "Your result",
+    "riskInArea": "Risk where you are",
+    "yourRisk": "Your malaria risk",
+    "actionTitle": "What to do now",
+    "watchTitle": "Watch for these signs",
+    "watchBody": "If any of these appear, go to a health center straight away.",
+    "explainTitle": "Why you are seeing this",
+    "findCare": "Find a health center",
+    "reportThis": "Report this to my community",
+    "checkAnother": "Check someone else",
+    "disclaimer": "This is not a medical diagnosis. Malaria can only be confirmed with a blood test at a health center. If you are worried, get tested.",
+    "emergencyBanner": "Go to a health center now. Do not wait.",
+    "offlineNotice": "You are offline, so this result uses the built-in clinical rules only. Reconnect for a fuller explanation.",
+    "levels": {
+      "low": {
+        "label": "Low risk",
+        "short": "Low",
+        "headline": "Keep watching, and keep using your bed net.",
+        "actions": [
+          "Sleep under a treated bed net every night, including during the day.",
+          "Drink plenty of clean water and rest.",
+          "Check again tomorrow if the fever does not settle."
+        ]
+      },
+      "moderate": {
+        "label": "Moderate risk",
+        "short": "Moderate",
+        "headline": "Please get this checked at a health center.",
+        "actions": [
+          "Visit a health center for a rapid diagnostic test or blood test.",
+          "If you are given medicine, finish the whole course even if you feel better.",
+          "Keep sleeping under a bed net, and avoid mosquito bites during the day."
+        ]
+      },
+      "high": {
+        "label": "High risk",
+        "short": "High",
+        "headline": "Go to a health center today.",
+        "actions": [
+          "Go today, and take someone with you if you can.",
+          "Write down when the fever started and any medicine you took.",
+          "Ask for a blood test. Do not rely on fever alone to decide."
+        ]
+      },
+      "emergency": {
+        "label": "Emergency",
+        "short": "Emergency",
+        "headline": "Go to a health center now. Do not wait.",
+        "actions": [
+          "Go to the nearest health center or hospital immediately.",
+          "Take someone with you, and do not travel alone.",
+          "Ask a health worker, or call 991 if you cannot travel."
+        ]
+      }
+    },
+    "redFlags": [
+      "Vomiting again and again, or unable to keep fluids down",
+      "Confusion, unusual behaviour, or difficulty staying awake",
+      "A seizure or shaking fit",
+      "Fast or difficult breathing",
+      "Very dark urine, or yellow eyes and skin",
+      "Bleeding, or feeling too weak to stand"
+    ]
+  },
+  "report": {
+    "title": "Report a case",
+    "subtitle": "Reports are anonymous and help your area get prepared.",
+    "region": "Region",
+    "regionPlaceholder": "Choose a region",
+    "zoneOptional": "Zone or woreda",
+    "zonePlaceholder": "Optional — add if you know it",
+    "ageGroup": "Who is affected?",
+    "adult": "An adult",
+    "child": "A child under 12",
+    "symptoms": "Symptoms seen",
+    "symptomsAny": "Symptoms not listed",
+    "duration": "How long has this person been unwell?",
+    "soughtCare": "Has this person sought care?",
+    "soughtYes": "Yes, treated",
+    "soughtNo": "No",
+    "soughtPending": "Not yet",
+    "notes": "Anything else",
+    "notesPlaceholder": "Optional note for health workers",
+    "submit": "Send report",
+    "submitting": "Sending…",
+    "privacyTitle": "Anonymous by design",
+    "privacyBody": "Reports have no name, phone number or exact location. We only keep the region so we can spot areas that need help.",
+    "consent": "I understand this report is anonymous and is used for public-health planning.",
+    "success": "Thank you. Your report was sent.",
+    "successQueued": "Saved. It will send when you are back online.",
+    "successBody": "You helped your community prepare.",
+    "badgeEarned": "Badge earned",
+    "badges": {
+      "first": "First report",
+      "five": "Community reporter",
+      "streak3": "Three-day streak",
+      "streak7": "Week-long streak",
+      "localHero": "Local hero"
+    },
+    "invalidRegion": "Please choose a region",
+    "invalidConsent": "Please confirm before sending"
+  },
+  "dashboard": {
+    "title": "Malaria risk map",
+    "subtitle": "Reported cases and weather, by region.",
+    "national": "Ethiopia",
+    "legend": "Risk level",
+    "riskNow": "Estimated risk",
+    "trends": "Reports over time",
+    "reports": "reports",
+    "lastUpdated": "Updated {{when}}",
+    "noData": "Not enough reports yet in this region",
+    "noDataBody": "Risk will appear here once people report from this area.",
+    "suppressed": "Too few reports to show",
+    "suppressedBody": "Showing this number could identify the people who reported, so we hold it back until there are at least five.",
+    "selectRegion": "Tap a region for detail",
+    "reportsHere": "Reports here",
+    "comparedToLastWeek": "vs last week",
+    "drivers": "What is driving this",
+    "driverRain": "Rainfall above the seasonal average creates standing water for mosquitoes.",
+    "driverTemp": "Temperatures in this range let the malaria parasite mature quickly.",
+    "driverHeat": "Very high temperatures shorten mosquito development time.",
+    "driverDry": "Hot, dry conditions reduce mosquito breeding.",
+    "driverCool": "Cooler highland conditions limit transmission.",
+    "driverCases": "A high number of cases has been reported here recently.",
+    "prepare": "How to prepare",
+    "prepNets": "Check every bed net for holes and repair or replace them.",
+    "prepDrain": "Empty pots, tyres and water tanks at least once a week.",
+    "prepKnow": "Know the name and location of your nearest health center.",
+    "prepDays": "Use repellent during the day — mosquitoes also bite in daylight.",
+    "topRegions": "Highest risk right now",
+    "nationalSummary": "Across Ethiopia",
+    "season": {
+      "peak": "Main malaria season",
+      "peakBody": "Most malaria transmission happens right now. Prevention matters most in these months.",
+      "building": "Season building",
+      "buildingBody": "Risk is rising as rains begin. Prepare now before cases increase.",
+      "declining": "Cases declining",
+      "decliningBody": "Risk is falling, but stay protected until the season ends.",
+      "low": "Low season",
+      "lowBody": "Fewer cases now. Use this time to repair nets and clear breeding sites."
+    }
+  },
+  "ask": {
+    "title": "Ask",
+    "subtitle": "Answers about malaria, in your language.",
+    "placeholder": "Ask about malaria…",
+    "send": "Send",
+    "thinking": "Thinking…",
+    "offlineTitle": "You are offline",
+    "offlineBody": "Here are the most common questions. Reconnect to ask your own.",
+    "common": {
+      "nets": "Do bed nets really work?",
+      "whenTest": "When should I get tested?",
+      "kids": "How can I tell if my child has malaria?",
+      "spray": "Is indoor spraying safe?",
+      "after": "I had malaria before. Can I get it again?"
+    },
+    "sources": "Based on WHO guidance. Not a substitute for a health professional.",
+    "error": "Something went wrong reaching the assistant. Try again, or read the offline answers.",
+    "clear": "Clear conversation"
+  },
+  "badges": {
+    "title": "Your progress",
+    "points": "points",
+    "reports": "reports",
+    "streak": "day streak",
+    "locked": "Locked",
+    "earned": "Earned",
+    "nextBadge": "Next: {{name}}",
+    "reportsToGo": "{{count}} more reports to go",
+    "daysToGo": "{{count}} more days to go"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "languageEn": "English",
+    "languageAm": "አማርኛ",
+    "theme": "Appearance",
+    "themeSystem": "Match phone",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "data": "Your data",
+    "deleteData": "Delete all my data",
+    "deleteConfirm": "This removes your reports, badges and progress from this phone and the server. It cannot be undone.",
+    "deleteDone": "Your data was deleted.",
+    "about": "About",
+    "version": "Version {{version}}",
+    "dataNotice": "Reports are anonymous and used for public-health planning."
+  },
+  "a11y": {
+    "riskRibbon": "Risk level",
+    "changeSeverity": "{{symptom}}: change severity",
+    "currentSeverity": "{{symptom}}: {{severity}}",
+    "closeSheet": "Close",
+    "regionMap": "Map of Ethiopia by malaria risk",
+    "selectedRegion": "{{name}}, risk {{level}}"
+  }
+}

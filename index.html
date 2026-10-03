@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#0F766E" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0B1220" media="(prefers-color-scheme: dark)" />
+    <meta name="description" content="Check your malaria risk, learn prevention, and report cases to build community early-warning data. Amharic and English." />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="MalariaX" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+
+    <!-- Self-hosted rather than a font CDN: a rural first load has no business
+         depending on fonts.gstatic.com being reachable, and the CSS already
+         falls back gracefully. -->
+    <link rel="preconnect" href="https://api.open-meteo.com" crossorigin />
+    <link rel="dns-prefetch" href="https://api.open-meteo.com" />
+
+    <title>MalariaX — Malaria risk &amp; community reporting</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>
+      <div style="padding:24px;font-family:system-ui,sans-serif;max-width:34rem;margin:auto">
+        <h1 style="font-size:1.25rem">MalariaX needs JavaScript</h1>
+        <p style="margin-top:12px;line-height:1.6">
+          This tool checks malaria symptoms and reports cases. If you cannot enable JavaScript,
+          please go directly to your nearest health center for a blood test — fever alone cannot
+        confirm malaria, and only a test can.
+      </p>
+        <p style="margin-top:12px;line-height:1.6">
+          የዚህ መሣሪያ ጃቭስክሪፕት ያስፈልጋል። እባክዎ ወደ ቅርብ ምክር ያለው ጤና ማዕከል በቀጥታ ይሂዱ፤
+        በስም ምርመራ ብቻ የወባ ምርመራ ይቻላል።
+        </p>
+      </div>
+    </noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

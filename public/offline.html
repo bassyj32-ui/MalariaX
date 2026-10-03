@@ -1,0 +1,63 @@
+<div id="root"></div>
+<style>
+  :root { color-scheme: light dark; }
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    font-family: Inter, 'Noto Sans Ethiopic', system-ui, -apple-system, sans-serif;
+    background: #f7f6f3;
+    color: #0b1220;
+  }
+  @media (prefers-color-scheme: dark) {
+    body { background: #0b1220; color: #f1f5f9; }
+  }
+  .box { max-width: 26rem; text-align: center; }
+  .mark {
+    width: 48px; height: 48px; border-radius: 12px;
+    background: #0f766e;
+    display: grid; place-items: center; margin: 0 auto 20px;
+  }
+  h1 { font-size: 1.25rem; margin: 0 0 12px; }
+  p { font-size: 0.9375rem; line-height: 1.6; color: #64748b; margin: 0 0 12px; }
+  .am { font-size: 0.9375rem; line-height: 1.7; }
+  button {
+    font: inherit; font-weight: 600; color: #fff; background: #0f766e;
+    border: none; border-radius: 10px; padding: 12px 24px; min-height: 44px;
+    cursor: pointer; margin-top: 8px;
+  }
+  @media (prefers-color-scheme: dark) { button { color: #04211f; } }
+</style>
+<script>
+  // The service worker serves this page when a navigation fails, which in
+  // practice means the user has no connection. Reports taken offline are safe in
+  // IndexedDB and upload automatically once they are back, so the correct thing
+  // to say is "you are fine, here is what still works" rather than an error.
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.addEventListener('message', function (e) {
+      if (e.data === 'offline-fallback') document.getElementById('retry').hidden = false;
+    });
+  }
+</script>
+<div class="box">
+  <div class="mark" aria-hidden="true">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#f7f6f3" stroke-width="2" stroke-linecap="round">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6" />
+    </svg>
+  </div>
+  <h1>You are offline</h1>
+  <p>
+    You are not connected, but the symptom checker still works — it uses rules
+    built into the app, so it does not need the internet to tell you to get help.
+  </p>
+  <p class="am">
+    ከመስመር ውጭ ነዎት። የምልክት ምልክት ፈተሱ ግን ይሠራል — በመተግበሪያው ውስጥ በተሰሩ መመርዝትን ስለሚጠቀም ኢንተርኔት አያስፈልግም።
+  </p>
+  <p>
+    Any report you send is saved on this phone and uploads by itself when you
+    reconnect. Nothing is lost.
+  </p>
+  <button id="retry" onclick="location.reload()" hidden>Try again</button>
+</div>
