@@ -69,7 +69,27 @@ export default defineConfig({
     },
   },
   test: {
-    environment: 'node',
-    include: ['src/**/*.test.ts'],
+    // Two projects. Pure logic stays in Node — fast, no browser shims — while
+    // render suites get jsdom. Keeping them apart means the safety-critical
+    // maths suite cannot be slowed down or broken by DOM plumbing.
+    projects: [
+      {
+        extends: true,
+        test: {
+          name: 'node',
+          environment: 'node',
+          include: ['src/**/*.test.ts'],
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: 'dom',
+          environment: 'jsdom',
+          include: ['src/**/*.test.tsx'],
+          setupFiles: ['src/test/setup-dom.ts'],
+        },
+      },
+    ],
   },
 });

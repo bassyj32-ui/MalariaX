@@ -165,7 +165,14 @@ export function DashboardScreen() {
             <Skeleton height={96} />
           </div>
         ) : failed ? (
-          <Empty title={t('common.offline')} body={t('common.offlineBody')} />
+          /* Distinguish "no backend configured" from "no connection". Telling a
+             user they are offline when the real cause is a missing env var sends
+             them to troubleshoot their Wi-Fi forever. */
+          isSupabaseConfigured ? (
+            <Empty title={t('common.offline')} body={t('common.offlineBody')} />
+          ) : (
+            <Empty title={t('dashboard.notConfigured')} body={t('dashboard.notConfiguredBody')} />
+          )
         ) : (
           <RegionGrid riskByCode={byCode} onSelect={setOpen} />
         )}

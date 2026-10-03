@@ -1,16 +1,30 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import i18n from '../i18n';
-import { Banner, Card, IconAlert, IconArrow, IconInfo, IconShield, RiskPill, RiskRibbon } from '../components/ui';
+import { Banner, Card, IconAlert, IconArrow, IconInfo, IconPhone, IconShield, RiskPill, RiskRibbon } from '../components/ui';
+import { CareSheet } from './CareSheet';
 import { getClimate } from '../lib/climate';
 import { REGIONS, findRegion } from '../lib/geo';
 import { evaluateRedFlags, isEmpty, SYMPTOM_IDS, type Severity, type SymptomId } from '../lib/redflags';
-import { assess } from '../lib/risk';
+import { assess, type ClimateInput } from '../lib/risk';
 import { useApp, type AgeGroup } from '../store/app';
 
 const SEVERITIES: readonly Severity[] = ['none', 'mild', 'moderate', 'severe'] as const;
 
 const DURATIONS: readonly number[] = [0, 1, 2, 3, 4, 7, 14];
+
+/**
+ * Neutral climate used for the instant, offline-first verdict. When no region is
+ * selected the environmental term is not applied at all — this placeholder only
+ * has to satisfy the signature, and `assess` ignores it for `region: null`.
+ */
+const OFFLINE_CLIMATE: ClimateInput = {
+  rainfallMm: 0,
+  rainfallNormMm: 0,
+  tempAvgC: 25,
+  humidityPct: 50,
+  caseRatePer100k: 0,
+};
 
 /** Region labels ship in the reference data rather than i18n, because they are
  *  proper nouns — a translation key per district would be unmaintainable. */
@@ -32,27 +46,57 @@ export function AssessScreen({ onBack }: { onBack?: () => void } = {}) {
 
   async function handleSubmit() {
     if (!canSubmit) return;
-    setBusy(true);
-    try {
-      const region = findRegion(answer.regionCode);
-      // Case rate is unknown until the dashboard has data; 0 here means the
-      // clinical picture drives the verdict, which is the safe default.
-      const climate = await getClimate(answer.regionCode ?? 'AA', 0);
-      const outcome = assess({
-        region,
-        climate,
-        clinical: redFlags.level,
-        forcedEmergency: redFlags.forcedEmergency,
-      });
 
-      setResult({
-        level: outcome.level,
-        forcedEmergency: outcome.forcedEmergency,
-        environmental: outcome.environmental?.level ?? null,
-        climateLive: climate.live,
-        at: Date.now(),
-      });
-    } finally {
+    // The clinical verdict is computed and shown IMMEDIATELY, with no network
+    // involved. This is deliberate: it is the decision that matters, it comes
+    // from the rule engine, and making someone wait on a weather API to learn
+    // whether they need to walk to a clinic is unacceptable — especially on the
+    // slow connections this app targets.
+    const clinical = assess({
+      region: null,
+      climate: OFFLINE_CLIMATE,
+      clinical: redFlags.level,
+      forcedEmergency: redFlags.forcedEmergency,
+    });
+
+    setResult({
+      level: clinical.level,
+      forcedEmergency: clinical.forcedEmergency,
+      environmental: null,
+      climateLive: false,
+      at: Date.now(),
+    });
+    setBusy(true);
+
+    // Then refine with the environmental band, which is context rather than
+    // triage. If this never resolves, the result the user already has is still
+    // correct and complete enough to act on.
+    const region = findRegion(answer.regionCode);
+    if (region) {
+      try {
+        const climate = await getClimate(region.code, 0);
+        const refined = assess({
+          region,
+          climate,
+          clinical: redFlags.level,
+          forcedEmergency: redFlags.forcedEmergency,
+        });
+        setResult((prev) =>
+          prev
+            ? {
+                ...prev,
+                level: refined.level,
+                environmental: refined.environmental?.level ?? null,
+                climateLive: climate.live,
+              }
+            : prev,
+        );
+      } catch {
+        // Leave the instant verdict in place.
+      } finally {
+        setBusy(false);
+      }
+    } else {
       setBusy(false);
     }
   }
@@ -98,9 +142,12 @@ export function AssessScreen({ onBack }: { onBack?: () => void } = {}) {
       <section className="section">
         <div className="section-head">
           <span className="eyebrow">{t('assess.symptomSection')}</span>
+          <button className="btn btn-ghost btn-sm" onClick={resetAnswer}>
+            {t('assess.reset')}
+          </button>
         </div>
 
-        <div className="stack">
+        <div className="symptom-list">
           {SYMPTOM_IDS.map((id) => (
             <SymptomRow key={id} id={id} value={answer.symptoms[id] ?? 'none'} onChange={setSeverity} />
           ))}
@@ -201,11 +248,13 @@ function SymptomRow({
 }) {
   const { t } = useTranslation();
   const label = t(`assess.symptoms.${id}`);
+  const isDanger = id === 'vomiting' || id === 'weakness';
 
   return (
-    <Card>
-      <div className="card-row-between" style={{ marginBottom: 'var(--sp-3)' }}>
-        <span className="card-title">{label}</span>
+    <div className="symptom" data-danger={isDanger} data-set={value !== 'none'}>
+      <div className="symptom-head">
+        <span className="symptom-name">{label}</span>
+        <span className={`symptom-state sev-${value}`}>{t(`assess.severity.${value}`)}</span>
       </div>
       <div className="severity" role="radiogroup" aria-label={t('a11y.changeSeverity', { symptom: label })}>
         {SEVERITIES.map((sev) => (
@@ -224,7 +273,8 @@ function SymptomRow({
           </button>
         ))}
       </div>
-    </Card>
+      {isDanger ? <p className="symptom-note">{t('assess.dangerNote')}</p> : null}
+    </div>
   );
 }
 
@@ -235,11 +285,14 @@ function SymptomRow({
 function ResultView({ onReset, onBack }: { onReset: () => void; onBack?: () => void }) {
   const { t } = useTranslation();
   const { result, answer, setTab } = useApp();
+  const [careOpen, setCareOpen] = useState(false);
   if (!result) return null;
 
   const level = result.level;
   const isEmergency = level === 'emergency';
+  const isHigh = level === 'high';
   const watchList = (t('result.redFlags', { returnObjects: true }) as string[]).map(String);
+  const actions = (t(`result.levels.${level}.actions`, { returnObjects: true }) as string[]).map(String);
 
   return (
     <div className="page">
@@ -270,7 +323,7 @@ function ResultView({ onReset, onBack }: { onReset: () => void; onBack?: () => v
           <div>
             <span className="eyebrow">{t('result.actionTitle')}</span>
             <ol className="stack stack-sm" style={{ marginTop: 'var(--sp-3)', counterReset: 'step' }}>
-              {(t(`result.levels.${level}.actions`, { returnObjects: true }) as string[]).map((a, i) => (
+              {actions.map((a, i) => (
                 <li key={i} className="row" style={{ alignItems: 'flex-start' }}>
                   <span
                     className="tnum"
@@ -330,6 +383,17 @@ function ResultView({ onReset, onBack }: { onReset: () => void; onBack?: () => v
             <IconArrow size={15} /> {t('common.back')}
           </button>
         ) : null}
+
+        {/* The single most useful action on a serious result, given first and
+            given real weight. It was the most obviously missing thing in the
+            first pass: the app gave advice and then stopped, exactly where the
+            user needs the most help. */}
+        {isEmergency || isHigh ? (
+          <button className="btn btn-danger btn-block" onClick={() => setCareOpen(true)}>
+            <IconPhone size={17} /> {t('result.findCare')}
+          </button>
+        ) : null}
+
         <button className="btn btn-primary btn-block" onClick={() => setTab('report')}>
           <IconShield size={17} /> {t('result.reportThis')}
         </button>
@@ -342,11 +406,11 @@ function ResultView({ onReset, onBack }: { onReset: () => void; onBack?: () => v
         </Banner>
 
         {answer.ageGroup === 'child' && !isEmergency ? (
-          <p className="small muted">
-            {t('assess.childNote')}
-          </p>
+          <p className="small muted">{t('assess.childNote')}</p>
         ) : null}
       </div>
+
+      <CareSheet open={careOpen} onClose={() => setCareOpen(false)} level={level} />
     </div>
   );
 }

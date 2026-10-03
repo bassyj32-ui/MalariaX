@@ -44,7 +44,12 @@ function detectLanguage(): LangCode {
 
 export const initialLanguage = detectLanguage();
 
-void i18n.use(initReactI18next).init({
+/**
+ * Exported so tests can await initialisation. `init()` is async even when every
+ * resource is bundled inline, so a render test that does not await this will
+ * assert against empty strings and fail in a way that looks like a UI bug.
+ */
+export const ready: Promise<unknown> = i18n.use(initReactI18next).init({
   resources,
   lng: initialLanguage,
   fallbackLng: 'en',

@@ -49,6 +49,17 @@ Eight symptoms × four severities, plus who-it-is-about (adult or child), how
 long, whether care was sought, and region. Produces a risk band with three
 concrete actions and a list of danger signs to watch for.
 
+**The verdict appears instantly and involves no network call.** It comes from the
+rule engine alone. If you have selected a region, the environmental band then
+refines it in the background — but the result you can act on is already on
+screen. Making someone wait on a weather API to find out whether they need to
+walk to a clinic is not acceptable on the connections this app targets.
+
+On a high or emergency result, **Find a health center** is the first action, and
+opens a sheet with the ambulance number, what to bring, and what to tell the
+health worker. MalariaX has no verified dataset of Ethiopian health facilities,
+so it does not pretend to show one.
+
 Works fully offline: with no connection the same rule engine runs and returns
 pre-written guidance, so a rural user with one bar of signal still gets correct
 escalation advice.
@@ -157,7 +168,9 @@ Open-Meteo needs no key. Nothing to configure.
 
 ## Testing
 
-69 unit tests, weighted toward the safety-critical surface:
+82 tests in two projects, weighted toward the safety-critical surface.
+
+**Logic** (`src/**/*.test.ts`, Node — fast, no browser shims):
 
 - **`redflags.test.ts`** — danger signs force EMERGENCY; combination rules fire;
   **monotonicity**: escalating any symptom never lowers the verdict.
@@ -170,8 +183,22 @@ Open-Meteo needs no key. Nothing to configure.
   no encoding corruption, and ≥70% of Amharic strings genuinely contain Ethiopic
   script (guards against a silent English fallback).
 
-Not yet covered, and worth adding before real use: browser tests for the offline
-queue and the offline assessment fallback, and an axe pass per screen.
+**Render** (`src/**/*.test.tsx`, jsdom):
+
+- **`App.test.tsx`** — the shell mounts, tabs work, the launcher reaches the
+  checker, submit stays disabled until something is selected, every result
+  carries the not-a-diagnosis warning, and an emergency result surfaces both the
+  danger signs and the care action while a low result shows neither.
+
+This second layer is not decoration. It caught a real defect: the result screen
+was awaiting a live weather API before it would render, so anyone on a slow
+connection watched a spinner for six seconds to learn whether they needed to walk
+to a clinic. The clinical verdict is now computed and painted instantly with no
+network involvement, and the environmental band refines it afterwards if it
+arrives. A unit test cannot have found that; a render test did.
+
+Not yet covered, and worth adding before real use: the offline sync queue across
+a reconnect, and an axe pass per screen.
 
 ---
 

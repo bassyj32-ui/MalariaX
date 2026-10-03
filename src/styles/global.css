@@ -824,6 +824,170 @@ ol {
 }
 
 /* ==========================================================================
+   Top bar — brand + always-reachable language switch
+   ========================================================================== */
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding-top: var(--safe-t);
+}
+
+.topbar-inner {
+  max-width: var(--shell-max);
+  margin-inline: auto;
+  height: 46px;
+  padding-inline: var(--sp-4);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+
+.topbar-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-width: 0;
+}
+
+/* The mark echoes the app icon: the four risk bands, softened. */
+.topbar-mark {
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  flex: none;
+  background: linear-gradient(
+    135deg,
+    var(--risk-low) 0 28%,
+    var(--risk-moderate) 28% 52%,
+    var(--risk-high) 52% 74%,
+    var(--risk-emergency) 74% 100%
+  );
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+}
+
+.topbar-name {
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  letter-spacing: -0.01em;
+}
+
+.lang-switch {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border-radius: var(--r-full);
+  background: var(--sunken);
+  color: var(--ink-3);
+  flex: none;
+}
+
+.lang-switch svg {
+  margin-inline: 5px 3px;
+  flex: none;
+}
+
+.lang-btn {
+  min-height: 30px;
+  padding: 0 10px;
+  border-radius: var(--r-full);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--ink-3);
+  letter-spacing: 0.02em;
+  transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+
+.lang-btn[aria-checked='true'] {
+  background: var(--raised);
+  color: var(--ink);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ==========================================================================
+   Symptom list
+   --------------------------------------------------------------------------
+   Compact rows rather than a full card each. Eight cards with a four-button
+   picker made the form about 720px of scrolling before a user reached the
+   submit button; this is roughly half that.
+   ========================================================================== */
+
+.symptom-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.symptom {
+  background: var(--raised);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: var(--sp-3);
+}
+
+.symptom-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-2);
+}
+
+.symptom-name {
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+  color: var(--ink);
+}
+
+.symptom-state {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--ink-4);
+  white-space: nowrap;
+}
+
+.symptom-state.sev-mild {
+  color: var(--risk-moderate);
+}
+.symptom-state.sev-moderate {
+  color: var(--risk-high);
+}
+.symptom-state.sev-severe {
+  color: var(--risk-emergency);
+}
+
+.symptom-note {
+  margin-top: var(--sp-2);
+  font-size: var(--text-xs);
+  color: var(--risk-emergency);
+  line-height: 1.4;
+}
+
+/* A selected danger sign earns a tinted row, so the two symptoms that drive an
+   EMERGENCY verdict are visible at a glance rather than buried in the list. */
+.symptom[data-danger='true'] {
+  border-color: color-mix(in srgb, var(--risk-emergency) 25%, transparent);
+}
+.symptom[data-danger='true'][data-set='true'] {
+  background: var(--risk-emergency-soft);
+  border-color: var(--risk-emergency);
+}
+
+/* ==========================================================================
+   View transition
+   ========================================================================== */
+
+.view-enter {
+  animation: fade-rise var(--dur-base) var(--ease-out);
+}
+
+/* ==========================================================================
    Ask bar — sticks above the tab bar so the input is reachable one-handed
    ========================================================================== */
 

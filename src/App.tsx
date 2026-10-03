@@ -1,9 +1,10 @@
-import { lazy, Suspense, useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AssessScreen } from './features/AssessScreen';
 import { AskScreen } from './features/AskScreen';
 import { ReportScreen } from './features/ReportScreen';
 import { Banner, Card, IconArrow, IconAward, IconCheck, IconMap, IconReport, IconShield, Skeleton } from './components/ui';
+import { TopBar } from './components/TopBar';
 import { pendingCount, startAutoSync, syncQueue } from './lib/offline';
 import { useApp, type TabKey } from './store/app';
 import './styles/global.css';
@@ -47,6 +48,7 @@ export default function App() {
 
   return (
     <div className="shell">
+      <TopBar />
       <main id="main">
         {tab === 'check' ? <CheckTab /> : null}
         {tab === 'report' ? <ReportScreen /> : null}
@@ -101,32 +103,32 @@ export default function App() {
  * need without reading a page of explanation first. From there it branches into
  * the symptom checker or the question assistant, both of which stay inside this
  * tab so the bottom bar never shifts under the thumb.
+ *
+ * The sub-view lives in the store, not local state, so switching to the Data tab
+ * and back does not discard a half-filled symptom form.
  */
-type CheckView = 'home' | 'assess' | 'ask';
-
 function CheckTab() {
   const { t } = useTranslation();
-  const { setTab, progress } = useApp();
-  const [view, setView] = useState<CheckView>('home');
+  const { setTab, progress, checkView, setCheckView } = useApp();
 
-  if (view === 'assess') {
+  if (checkView === 'assess') {
     return (
-      <div>
+      <div className="view-enter">
         <div className="page" style={{ paddingBottom: 0 }}>
-          <button className="btn btn-ghost btn-sm" onClick={() => setView('home')}>
+          <button className="btn btn-ghost btn-sm" onClick={() => setCheckView('home')}>
             <IconArrow size={14} /> {t('common.back')}
           </button>
         </div>
-        <AssessScreen onBack={() => setView('home')} />
+        <AssessScreen onBack={() => setCheckView('home')} />
       </div>
     );
   }
 
-  if (view === 'ask') {
+  if (checkView === 'ask') {
     return (
-      <div>
+      <div className="view-enter">
         <div className="page" style={{ paddingBottom: 0 }}>
-          <button className="btn btn-ghost btn-sm" onClick={() => setView('home')}>
+          <button className="btn btn-ghost btn-sm" onClick={() => setCheckView('home')}>
             <IconArrow size={14} /> {t('common.back')}
           </button>
         </div>
@@ -136,7 +138,7 @@ function CheckTab() {
   }
 
   return (
-    <div className="page">
+    <div className="page view-enter">
       <header className="page-head">
         <h1 className="page-title">
           {t('home.greeting')} · {t('app.name')}
@@ -149,13 +151,13 @@ function CheckTab() {
           icon={<IconShield size={18} />}
           title={t('home.checkSelf')}
           body={t('home.checkSelfBody')}
-          onClick={() => setView('assess')}
+          onClick={() => setCheckView('assess')}
         />
         <LaunchCard
           icon={<IconCheck size={18} />}
           title={t('home.askQuestion')}
           body={t('home.askQuestionBody')}
-          onClick={() => setView('ask')}
+          onClick={() => setCheckView('ask')}
         />
         <LaunchCard
           icon={<IconReport size={18} />}

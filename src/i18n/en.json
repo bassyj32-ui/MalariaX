@@ -43,6 +43,7 @@
     "child": "A child under 12",
     "symptomSection": "Symptoms",
     "childNote": "Children who are unwell need to be seen quickly. Answer carefully and read the warning signs on the result.",
+    "dangerNote": "Any of these needs same-day care, not tomorrow.",
     "regionWhy": "Your region is used to check local weather and reported cases. It is never linked to your name.",
     "ageLabel": "How long have these symptoms lasted?",
     "ageNone": "Started today",
@@ -191,6 +192,8 @@
     "lastUpdated": "Updated {{when}}",
     "noData": "Not enough reports yet in this region",
     "noDataBody": "Risk will appear here once people report from this area.",
+    "notConfigured": "Risk data not connected yet",
+    "notConfiguredBody": "This build has no database attached, so regional risk cannot load. Everything else — symptom checks, prevention advice and offline reporting — still works.",
     "suppressed": "Too few reports to show",
     "suppressedBody": "Showing this number could identify the people who reported, so we hold it back until there are at least five.",
     "selectRegion": "Tap a region for detail",
@@ -220,6 +223,21 @@
       "low": "Low season",
       "lowBody": "Fewer cases now. Use this time to repair nets and clear breeding sites."
     }
+  },
+  "care": {
+    "callAmbulance": "Call the ambulance (991)",
+    "bringTitle": "Take these with you",
+    "bring": [
+      "Any medicine or a packet you have already taken",
+      "A phone, so the clinic can call you",
+      "Someone to go with you, and a way to pay for transport",
+      "Note the day the fever started"
+    ],
+    "sayTitle": "Tell the health worker",
+    "sayBody": "Say when the fever started, whether you have vomited, and whether you have used any medicine. This is the information they need to test and treat you correctly.",
+    "localTitle": "Finding the nearest health center",
+    "localBody": "Ask someone nearby — a health extension worker, a pharmacy, or your kebele office — which health center is closest and whether it has a malaria test. Most health posts can do a rapid test on the spot.",
+    "urgentOnly": "Show this only for high or emergency results"
   },
   "ask": {
     "title": "Ask",
