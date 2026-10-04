@@ -12,7 +12,8 @@
     "preview": "vite preview",
     "typecheck": "tsc -b --force",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:dist": "vitest run --project node src/test/dist.test.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.58.0",

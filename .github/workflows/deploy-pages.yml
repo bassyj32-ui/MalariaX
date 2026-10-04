@@ -51,6 +51,12 @@ jobs:
         env:
           BASE_PATH: /MalariaX/
 
+      # Runs after the build, against the artifact that will actually ship. These
+      # catch subpath mistakes — assets, icons, manifest scope, service worker —
+      # which are invisible locally and stop the PWA installing in production.
+      - name: Verify build artifact
+        run: npm run test:dist
+
       - uses: actions/configure-pages@v5
 
       - uses: actions/upload-pages-artifact@v3

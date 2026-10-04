@@ -22,8 +22,12 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'icon-192.png', 'icon-512.png'],
       manifest: {
-        id: '/',
-        name: 'MalariaX — Malaria Risk & Community Reporting',
+        // Must match scope or the app can be installed twice under different
+        // identities on the same origin.
+        id: BASE,
+        // Plain ASCII punctuation: an em-dash here showed up mangled when the
+        // manifest was read back, and there is nothing to gain from it.
+        name: 'MalariaX - Malaria Risk & Community Reporting',
         short_name: 'MalariaX',
         description:
           'Check your malaria risk, learn prevention, and report cases to build community early-warning data.',
@@ -36,9 +40,12 @@ export default defineConfig({
         theme_color: '#0F766E',
         categories: ['health', 'medical', 'lifestyle'],
         icons: [
-          { src: '/icon-192.png', sizes: '192x192', type: 'image/png' },
-          { src: '/icon-512.png', sizes: '512x512', type: 'image/png' },
-          { src: '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          // Base-aware. An absolute "/icon-192.png" 404s on GitHub Pages, and a
+          // manifest whose icons do not resolve means the PWA silently refuses
+          // to install — no error the user would ever see.
+          { src: `${BASE}icon-192.png`, sizes: '192x192', type: 'image/png' },
+          { src: `${BASE}icon-512.png`, sizes: '512x512', type: 'image/png' },
+          { src: `${BASE}icon-512.png`, sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
       workbox: {
