@@ -34,6 +34,30 @@ const NARROW = { viewport: { width: 320, height: 900 }, deviceScaleFactor: 2, is
 
 const problems = [];
 
+/**
+ * Wait for real content rather than a fixed delay.
+ *
+ * A fixed timeout produced a false alarm: on a real host the lazily-loaded Data
+ * tab had not finished downloading after 1500ms, so the screenshot showed
+ * Suspense skeletons and it looked like the map was broken when it was fine.
+ * A QA script that cries wolf gets ignored, which is worse than none.
+ */
+async function waitFor(page, selector, label, timeoutMs = 30000) {
+  const started = Date.now();
+  while (Date.now() - started < timeoutMs) {
+    if (await page.locator(selector).count()) return true;
+    await page.waitForTimeout(250);
+  }
+  problems.push(`timed out waiting for ${label ?? selector}`);
+  return false;
+}
+
+/**
+ * `networkidle` never fires on a page with a service worker — the worker keeps
+ * a connection alive — so it is not a usable readiness signal here.
+ */
+const READY = { waitUntil: 'load', timeout: 60000 };
+
 async function shot(page, name) {
   await page.waitForTimeout(450);
   await page.screenshot({ path: join(OUT, `${name}.png`) });
@@ -69,7 +93,7 @@ try {
   page.on('pageerror', (e) => problems.push(`page error: ${e.message.slice(0, 160)}`));
 
   console.log('\n— home —');
-  await page.goto(BASE, { waitUntil: 'networkidle' });
+  await page.goto(BASE, READY);
   await shot(page, '01-home');
   await checkOverflow(page, 'home');
 
@@ -102,7 +126,7 @@ try {
 
   console.log('— dashboard / cartogram —');
   await page.getByRole('tab', { name: /Data/i }).click();
-  await page.waitForTimeout(1500);
+  await waitFor(page, '.map-cell', 'risk map');
   await shot(page, '06-dashboard');
   await page.screenshot({ path: join(OUT, '06b-dashboard-full.png'), fullPage: true });
   console.log('  shot 06b (full page)');
@@ -122,7 +146,7 @@ try {
   // Reload so we start from the launcher. The previous pass left an emergency
   // result on screen, which is why this section originally failed to find the
   // "check symptoms" entry point. Language choice persists in localStorage.
-  await page.reload({ waitUntil: 'networkidle' });
+  await page.reload(READY);
   await page.getByRole('radio', { name: /አማርኛ/ }).click();
   await page.waitForTimeout(600);
   await shot(page, '07-home-amharic');
@@ -137,7 +161,7 @@ try {
   console.log('— narrow 320px —');
   const ctx2 = await browser.newContext({ ...NARROW, locale: 'en-GB' });
   const p2 = await ctx2.newPage();
-  await p2.goto(BASE, { waitUntil: 'networkidle' });
+  await p2.goto(BASE, READY);
   await shot(p2, '10-home-320');
   await checkOverflow(p2, 'home-320');
   await p2.getByRole('button', { name: /Check symptoms/i }).first().click();
@@ -147,7 +171,7 @@ try {
   console.log('— dark mode —');
   const ctx3 = await browser.newContext({ ...PHONE, colorScheme: 'dark', locale: 'en-GB' });
   const p3 = await ctx3.newPage();
-  await p3.goto(BASE, { waitUntil: 'networkidle' });
+  await p3.goto(BASE, READY);
   await shot(p3, '12-home-dark');
   await p3.getByRole('button', { name: /Check symptoms/i }).first().click();
   await p3.getByRole('radio', { name: /^Vomiting: Mild$/i }).first().click();
