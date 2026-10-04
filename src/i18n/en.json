@@ -256,6 +256,7 @@
     "thinking": "Thinking…",
     "offlineTitle": "You are offline",
     "offlineBody": "Here are the most common questions. Reconnect to ask your own.",
+    "commonTitle": "Questions we can answer now",
     "common": {
       "nets": "Do bed nets really work?",
       "whenTest": "When should I get tested?",

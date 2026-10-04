@@ -3,7 +3,19 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
+/**
+ * Public base path.
+ *
+ * Defaults to '/' for local dev and for a root-domain deploy (Vercel). Set
+ * BASE_PATH=/MalariaX/ when building for GitHub Pages, which serves the repo
+ * from a subpath. This has to be derived rather than hardcoded, otherwise the
+ * built assets 404 and the PWA refuses to install because its start_url points
+ * outside its scope.
+ */
+const BASE = process.env.BASE_PATH ?? '/';
+
 export default defineConfig({
+  base: BASE,
   plugins: [
     react(),
     VitePWA({
@@ -16,8 +28,8 @@ export default defineConfig({
         description:
           'Check your malaria risk, learn prevention, and report cases to build community early-warning data.',
         lang: 'en',
-        start_url: '/',
-        scope: '/',
+        start_url: BASE,
+        scope: BASE,
         display: 'standalone',
         orientation: 'portrait',
         background_color: '#F7F6F3',
@@ -31,7 +43,9 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,woff2,json}'],
-        navigateFallback: 'index.html',
+        // Must sit under BASE or the service worker serves the wrong document
+        // for the app on GitHub Pages.
+        navigateFallback: `${BASE}index.html`,
         // Rural first load has to survive a dropped connection, so a failed
         // navigation lands on an offline page that explains what still works
         // rather than on the browser's default dinosaur.

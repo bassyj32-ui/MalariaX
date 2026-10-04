@@ -9,9 +9,11 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="MalariaX" />
-    <link rel="manifest" href="/manifest.webmanifest" />
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="/icon-192.png" />
+    <!-- Relative, not absolute: these must resolve under a subpath on GitHub Pages
+         ("/MalariaX/") as well as at a domain root. -->
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="icon-192.png" />
 
     <!-- Self-hosted rather than a font CDN: a rural first load has no business
          depending on fonts.gstatic.com being reachable, and the CSS already

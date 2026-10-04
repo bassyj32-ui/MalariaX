@@ -105,10 +105,30 @@ export function AskScreen() {
       )}
 
       {error ? (
-        <div className="section">
+        <div className="section stack">
           <Banner tone="warn" icon={<IconAlert size={16} />}>
             {t('ask.error')}
           </Banner>
+          {/* Rather than leaving the user stuck at an error, hand back the
+              questions we can answer without a network. On GitHub Pages there
+              is no serverless runtime at all, so this is the normal path. */}
+          <Card>
+            <span className="eyebrow">{t('ask.commonTitle')}</span>
+            <ul className="stack stack-sm" style={{ marginTop: 'var(--sp-3)' }}>
+              {COMMON_KEYS.map((k) => (
+                <li key={k}>
+                  <button
+                    type="button"
+                    className="btn btn-secondary btn-block"
+                    style={{ justifyContent: 'space-between' }}
+                    onClick={() => void send(t(`ask.common.${k}`))}
+                  >
+                    {t(`ask.common.${k}`)}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </Card>
         </div>
       ) : null}
 
