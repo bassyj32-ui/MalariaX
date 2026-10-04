@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import i18n from '../i18n';
-import { Banner, Card, IconAlert, IconArrow, IconBack, IconInfo, IconPhone, IconShield, RiskPill, RiskRibbon } from '../components/ui';
+import { Banner, Card, IconAlert, IconArrow, IconBack, IconInfo, IconPhone, IconShield, RiskRibbon } from '../components/ui';
 import { CareSheet } from './CareSheet';
 import { getClimate } from '../lib/climate';
 import { REGIONS, findRegion } from '../lib/geo';
@@ -327,19 +327,26 @@ function ResultView({ onReset, onBack }: { onReset: () => void; onBack?: () => v
 
       <div className={`risk-panel risk-${level}`}>
         <div className="risk-panel-head">
-          <span className="eyebrow" style={{ color: 'inherit', opacity: 0.8 }}>
+          <span className="eyebrow" style={{ color: 'inherit', opacity: 0.75 }}>
             {t('result.yourRisk')}
           </span>
-          <div className="row row-wrap" style={{ justifyContent: 'space-between', marginTop: 'var(--sp-2)' }}>
-            <span className="risk-level">{t(`result.levels.${level}.short`)}</span>
-            <RiskPill level={level} label={t(`result.levels.${level}.label`)} />
+          {/* The band name is already set in 32px monospace directly below. A
+              pill repeating "Emergency" next to a giant EMERGENCY is noise, and
+              this is the screen with the least room to waste. */}
+          <div className="risk-level" style={{ marginTop: 'var(--sp-2)' }}>
+            {t(`result.levels.${level}.short`)}
           </div>
         </div>
 
         <div className="risk-panel-body stack">
-          <p style={{ fontSize: 'var(--text-md)', fontWeight: 'var(--weight-semibold)' }}>
-            {t(`result.levels.${level}.headline`)}
-          </p>
+          {/* On the two serious bands the alert banner above already carries
+              this exact sentence. Repeating it wastes the most valuable space
+              on the screen, so it is shown only where the banner is absent. */}
+          {isEmergency ? null : (
+            <p style={{ fontSize: 'var(--text-md)', fontWeight: 'var(--weight-semibold)' }}>
+              {t(`result.levels.${level}.headline`)}
+            </p>
+          )}
 
           <div>
             <span className="eyebrow">{t('result.actionTitle')}</span>

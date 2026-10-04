@@ -20,7 +20,14 @@ export function TopBar() {
     <header className="topbar">
       <div className="topbar-inner">
         <div className="topbar-brand">
-          <span className="topbar-mark" aria-hidden="true" />
+          {/* Gauge mark: three ascending bars in the first three risk hues.
+              Reads as a measurement scale at 16px, and echoes the risk rail
+              used on every other surface in the app. */}
+          <span className="topbar-mark" aria-hidden="true">
+            <i />
+            <i />
+            <i />
+          </span>
           <span className="topbar-name">{t('app.name')}</span>
         </div>
 

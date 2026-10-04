@@ -140,37 +140,46 @@ function CheckTab() {
   return (
     <div className="page view-enter">
       <header className="page-head">
-        <h1 className="page-title">
-          {t('home.greeting')} · {t('app.name')}
-        </h1>
-        <p className="page-sub">{t('home.subtitle')}</p>
+        {/* No greeting. The top bar already carries the product name, and
+            "Hello" is wasted vertical space in an app someone opens in
+            distress. The subtitle is the only part worth showing. */}
+        <p className="small" style={{ marginTop: 0, color: 'var(--ink-2)' }}>
+          {t('home.subtitle')}
+        </p>
       </header>
 
-      <div className="stack">
-        <LaunchCard
-          icon={<IconShield size={18} />}
-          title={t('home.checkSelf')}
-          body={t('home.checkSelfBody')}
-          onClick={() => setCheckView('assess')}
-        />
-        <LaunchCard
-          icon={<IconCheck size={18} />}
-          title={t('home.askQuestion')}
-          body={t('home.askQuestionBody')}
-          onClick={() => setCheckView('ask')}
-        />
-        <LaunchCard
-          icon={<IconReport size={18} />}
-          title={t('home.reportCase')}
-          body={t('home.reportCaseBody')}
-          onClick={() => setTab('report')}
-        />
-        <LaunchCard
-          icon={<IconMap size={18} />}
-          title={t('home.checkArea')}
-          body={t('home.checkAreaBody')}
-          onClick={() => setTab('dashboard')}
-        />
+      <button className="primary-action" onClick={() => setCheckView('assess')}>
+        <span className="primary-title">
+          <span className="row">
+            <IconShield size={19} />
+            {t('home.checkSelf')}
+          </span>
+          <IconArrow size={18} />
+        </span>
+        <span className="primary-body">{t('home.checkSelfBody')}</span>
+      </button>
+
+      <div style={{ marginTop: 'var(--sp-4)' }}>
+        <div className="list">
+          <ListRow
+            icon={<IconCheck size={18} />}
+            title={t('home.askQuestion')}
+            body={t('home.askQuestionBody')}
+            onClick={() => setCheckView('ask')}
+          />
+          <ListRow
+            icon={<IconMap size={18} />}
+            title={t('home.checkArea')}
+            body={t('home.checkAreaBody')}
+            onClick={() => setTab('dashboard')}
+          />
+          <ListRow
+            icon={<IconReport size={18} />}
+            title={t('home.reportCase')}
+            body={t('home.reportCaseBody')}
+            onClick={() => setTab('report')}
+          />
+        </div>
       </div>
 
       <section className="section">
@@ -180,19 +189,21 @@ function CheckTab() {
               <IconAward size={17} />
               <span className="card-title">{t('home.yourBadges')}</span>
             </div>
-            <span className="xs muted">{progress.points} {t('badges.points')}</span>
+            <span className="xs muted tnum">
+              {progress.points} {t('badges.points')}
+            </span>
           </div>
           <div className="stat-grid" style={{ marginTop: 'var(--sp-4)' }}>
             <div className="stat">
-              <span className="stat-value tnum">{progress.reportsCount}</span>
+              <span className="stat-value">{progress.reportsCount}</span>
               <span className="stat-label">{t('badges.reports')}</span>
             </div>
             <div className="stat">
-              <span className="stat-value tnum">{progress.currentStreak}</span>
+              <span className="stat-value">{progress.currentStreak}</span>
               <span className="stat-label">{t('badges.streak')}</span>
             </div>
             <div className="stat">
-              <span className="stat-value tnum">{progress.badges.length}</span>
+              <span className="stat-value">{progress.badges.length}</span>
               <span className="stat-label">{t('badges.earned')}</span>
             </div>
           </div>
@@ -202,7 +213,7 @@ function CheckTab() {
   );
 }
 
-function LaunchCard({
+function ListRow({
   icon,
   title,
   body,
@@ -214,15 +225,17 @@ function LaunchCard({
   onClick: () => void;
 }) {
   return (
-    <button className="card card-row-between" style={{ width: '100%', textAlign: 'start', cursor: 'pointer' }} onClick={onClick}>
-      <div className="row" style={{ alignItems: 'flex-start' }}>
-        <span style={{ color: 'var(--brand)', marginTop: 2 }}>{icon}</span>
-        <div>
-          <div className="card-title">{title}</div>
-          <p className="card-body">{body}</p>
-        </div>
-      </div>
-      <IconArrow size={16} />
+    <button className="list-row" onClick={onClick}>
+      <span className="list-row-icon" aria-hidden="true">
+        {icon}
+      </span>
+      <span className="grow">
+        <span className="list-row-title">{title}</span>
+        <span className="list-row-body">{body}</span>
+      </span>
+      <span className="list-row-chevron" aria-hidden="true">
+        <IconArrow size={16} />
+      </span>
     </button>
   );
 }

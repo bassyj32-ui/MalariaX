@@ -49,7 +49,13 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,png,woff2,json}'],
+        // Fonts are deliberately NOT precached. The Ethiopic face alone is
+        // ~194KB, and precaching it makes every first visit pay for it —
+        // including for the majority of users who never switch to Amharic. The
+        // Latin faces arrive with the first render through the normal HTTP
+        // cache, and the runtime rule below keeps whatever has been used
+        // available offline afterwards.
+        globPatterns: ['**/*.{js,css,html,svg,png,json}'],
         // Derived from BASE so a subpath host cannot serve the wrong document.
         navigateFallback: `${BASE}index.html`,
         // Rural first load has to survive a dropped connection, so a failed
@@ -57,6 +63,15 @@ export default defineConfig({
         // rather than on the browser's default dinosaur.
         navigateFallbackDenylist: [/^\/api\//],
         runtimeCaching: [
+          {
+            urlPattern: /\.(?:woff2?|ttf|otf)$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'malariax-fonts',
+              expiration: { maxEntries: 12, maxAgeSeconds: 60 * 60 * 24 * 365 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
           {
             urlPattern: /\/api\//,
             handler: 'NetworkFirst',
