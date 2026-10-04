@@ -3,6 +3,11 @@
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
     "target": "es2023",
     "lib": ["ES2023"],
+    /* vite.config.ts runs in Node and reads process.env for the Pages subpath,
+       so the node types are genuinely required here. Removing them made
+       `tsc -b` pass locally on a stale incremental cache while CI, building
+       clean, correctly failed. */
+    "types": ["node"],
     "skipLibCheck": true,
 
     /* Bundler mode */
