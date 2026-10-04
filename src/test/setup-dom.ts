@@ -54,9 +54,10 @@ if (!window.matchMedia) {
   })) as typeof window.matchMedia;
 }
 
-if (!window.scrollTo) {
-  window.scrollTo = (() => {}) as typeof window.scrollTo;
-}
+// jsdom *has* window.scrollTo but it throws "Not implemented", so a presence
+// check never replaces it. Unconditional override: the resulting stderr noise
+// in an otherwise green run is how a real error hides later.
+window.scrollTo = (() => {}) as typeof window.scrollTo;
 
 // jsdom implements neither of these. The component guards them too, because some
 // older Android WebViews genuinely lack scrollIntoView — which is most of the

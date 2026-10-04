@@ -28,6 +28,7 @@ function readSafe(path: string): string {
 
 interface Manifest {
   id: string;
+  name: string;
   start_url: string;
   scope: string;
   icons: { src: string; sizes?: string; purpose?: string }[];
