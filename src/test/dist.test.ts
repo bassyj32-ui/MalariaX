@@ -35,39 +35,60 @@ interface Manifest {
 }
 
 const manifestRaw = readSafe(resolve(DIST, 'manifest.webmanifest'));
-const describeDist = manifestRaw.length > 0 ? describe : describe.skip;
+
+/**
+ * Parsed defensively, because this file is collected twice: once by `npm test`
+ * (where dist/ may not exist yet, since the suite runs before the build) and
+ * again by `npm run test:dist` after a build.
+ *
+ * `describe.skip` still executes its callback in order to collect test names, so
+ * a bare JSON.parse('') inside it throws during collection and fails the whole
+ * run. Hence: null means "nothing to check", not "broken".
+ */
+function parseManifest(raw: string): Manifest | null {
+  if (!raw.trim()) return null;
+  try {
+    return JSON.parse(raw) as Manifest;
+  } catch {
+    return null;
+  }
+}
+
+const manifest = parseManifest(manifestRaw);
+const describeDist = manifest ? describe : describe.skip;
 
 describeDist('Pages artifact, built with BASE_PATH=/MalariaX/', () => {
-  const manifest = JSON.parse(manifestRaw) as Manifest;
+  // Non-null: describeDist only runs when the parse succeeded.
+  const m = manifest!;
 
   it('scopes the manifest under the subpath, not the root', () => {
-    expect(manifest.start_url).toBe(BASE);
-    expect(manifest.scope).toBe(BASE);
+    expect(m.start_url).toBe(BASE);
+    expect(m.scope).toBe(BASE);
   });
 
   it('gives the manifest an id matching its scope', () => {
     // A mismatch lets the same app be installed twice under different
     // identities on one origin, which is confusing and hard to undo.
-    expect(manifest.id).toBe(manifest.scope);
+    expect(m.id).toBe(m.scope);
   });
 
   it('points every icon at the subpath', () => {
-    expect(manifest.icons.length).toBeGreaterThanOrEqual(2);
-    for (const icon of manifest.icons) {
+    expect(m.icons.length).toBeGreaterThanOrEqual(2);
+    for (const icon of m.icons) {
       expect(icon.src.startsWith(BASE), `${icon.src} is not under ${BASE}`).toBe(true);
     }
   });
 
   it('ships a 192, a 512, and a maskable icon', () => {
-    const joined = manifest.icons.map((i) => `${i.src} ${i.sizes ?? ''}`).join(' ');
+    const joined = m.icons.map((i) => `${i.src} ${i.sizes ?? ''}`).join(' ');
     expect(joined).toContain('192');
     expect(joined).toContain('512');
-    expect(manifest.icons.some((i) => i.purpose === 'maskable')).toBe(true);
+    expect(m.icons.some((i) => i.purpose === 'maskable')).toBe(true);
   });
 
   it('uses plain ASCII in the manifest name', () => {
     // An em-dash came back mangled from a build; nothing is gained by it.
-    expect(manifest.name).not.toMatch(/[\u2013\u2014]/);
+    expect(m.name).not.toMatch(/[\u2013\u2014]/);
   });
 
   it('references assets under the subpath from index.html', () => {
