@@ -16,7 +16,6 @@ import { resolve } from 'node:path';
  */
 
 const DIST = resolve(process.cwd(), 'dist');
-const BASE = '/MalariaX/';
 
 function readSafe(path: string): string {
   try {
@@ -57,7 +56,19 @@ function parseManifest(raw: string): Manifest | null {
 const manifest = parseManifest(manifestRaw);
 const describeDist = manifest ? describe : describe.skip;
 
-describeDist('Pages artifact, built with BASE_PATH=/MalariaX/', () => {
+/**
+ * The base is read from the built manifest rather than hardcoded, so these
+ * assertions hold for any target: '/' on Vercel, '/MalariaX/' on GitHub Pages.
+ * Hardcoding one of them meant a plain local build failed these checks for the
+ * wrong reason, which is a good way to train someone to ignore them.
+ *
+ * `scope` is already a path, not a URL, so it is used directly — `new URL()`
+ * rejects a bare path.
+ */
+const scope: string = manifestRaw ? JSON.parse(manifestRaw).scope : '/';
+const BASE = scope.endsWith('/') ? scope : `${scope}/`;
+
+describeDist(`build artifact, scope ${BASE}`, () => {
   // Non-null: describeDist only runs when the parse succeeded.
   const m = manifest!;
 
@@ -91,17 +102,34 @@ describeDist('Pages artifact, built with BASE_PATH=/MalariaX/', () => {
     expect(m.name).not.toMatch(/[\u2013\u2014]/);
   });
 
-  it('references assets under the subpath from index.html', () => {
+  it('references assets under the scope from index.html', () => {
     const html = readSafe(resolve(DIST, 'index.html'));
-    expect(html).toContain('/MalariaX/assets/');
-    // No root-absolute src/href: those 404 under a subpath.
-    expect(html).not.toMatch(/(?:src|href)="\/(?!MalariaX\/)/);
+    expect(html).toContain(`${BASE}assets/`);
+    // No root-absolute src/href: those 404 when the app lives on a subpath.
+    // When BASE is '/', every src/href *is* root-relative, so there is nothing
+    // to assert and the check is skipped rather than made vacuous.
+    if (BASE !== '/') {
+      // Capture whole attribute values. Matching only the `src="/` prefix would
+      // flag every correctly-scoped path, since `/MalariaX/...` also starts
+      // with a single slash.
+      const values: string[] = [...html.matchAll(/(?:src|href)="([^"]*)"/g)].map((m) => m[1]!);
+      const offenders = values.filter((v) => v.startsWith('/') && !v.startsWith(BASE));
+      expect(offenders, `root-absolute refs outside ${BASE}: ${offenders.join(', ')}`).toEqual([]);
+    }
   });
 
-  it('links the manifest and icons relatively', () => {
+  it('links the manifest in a way that resolves for this scope', () => {
     const html = readSafe(resolve(DIST, 'index.html'));
-    expect(html).toMatch(/rel="manifest" href="manifest\.webmanifest"/);
-    expect(html).not.toMatch(/rel="manifest" href="\/manifest/);
+    const href = html.match(/rel="manifest" href="([^"]*)"/)?.[1];
+    expect(href, 'no manifest link found in index.html').toBeTruthy();
+    // Two valid forms: relative (resolves against the document, so it follows
+    // whatever subpath it is served from) or explicitly scoped. Only a
+    // root-absolute path outside the scope is a 404.
+    if (BASE !== '/') {
+      const isRelative = !href!.startsWith('/');
+      const isScoped = href!.startsWith(BASE);
+      expect(isRelative || isScoped, `manifest href "${href}" resolves outside ${BASE}`).toBe(true);
+    }
   });
 
   it('registers and navigates the service worker inside the subpath', () => {
