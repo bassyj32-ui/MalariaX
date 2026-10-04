@@ -11,8 +11,8 @@ import { resolve } from 'node:path';
  * Chrome surfaces none of that to the user — the app simply never becomes
  * installable, which is very hard to notice and very easy to ship.
  *
- * These assertions run against a real Pages build, so they describe the artifact
- * that actually ships. They are skipped when there is no build to inspect.
+ * These assertions run against a real build, so they describe the artifact that
+ * actually ships. They are skipped when there is no build to inspect.
  */
 
 const DIST = resolve(process.cwd(), 'dist');
@@ -58,9 +58,10 @@ const describeDist = manifest ? describe : describe.skip;
 
 /**
  * The base is read from the built manifest rather than hardcoded, so these
- * assertions hold for any target: '/' on Vercel, '/MalariaX/' on GitHub Pages.
- * Hardcoding one of them meant a plain local build failed these checks for the
- * wrong reason, which is a good way to train someone to ignore them.
+ * assertions hold for whatever the build targeted — '/' in a normal Vercel
+ * build, or a subpath if BASE_PATH is set. Hardcoding one of them meant a plain
+ * local build failed these checks for the wrong reason, which is a good way to
+ * train someone to ignore a test.
  *
  * `scope` is already a path, not a URL, so it is used directly — `new URL()`
  * rejects a bare path.
@@ -110,8 +111,8 @@ describeDist(`build artifact, scope ${BASE}`, () => {
     // to assert and the check is skipped rather than made vacuous.
     if (BASE !== '/') {
       // Capture whole attribute values. Matching only the `src="/` prefix would
-      // flag every correctly-scoped path, since `/MalariaX/...` also starts
-      // with a single slash.
+      // flag every correctly-scoped path, since a scoped path also starts with a
+      // single slash.
       const values: string[] = [...html.matchAll(/(?:src|href)="([^"]*)"/g)].map((m) => m[1]!);
       const offenders = values.filter((v) => v.startsWith('/') && !v.startsWith(BASE));
       expect(offenders, `root-absolute refs outside ${BASE}: ${offenders.join(', ')}`).toEqual([]);

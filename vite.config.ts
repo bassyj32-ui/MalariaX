@@ -6,11 +6,11 @@ import { VitePWA } from 'vite-plugin-pwa';
 /**
  * Public base path.
  *
- * Defaults to '/' for local dev and for a root-domain deploy (Vercel). Set
- * BASE_PATH=/MalariaX/ when building for GitHub Pages, which serves the repo
- * from a subpath. This has to be derived rather than hardcoded, otherwise the
- * built assets 404 and the PWA refuses to install because its start_url points
- * outside its scope.
+ * Vercel serves from a domain root, so this is '/' in every normal build. The
+ * indirection is kept because one hardcoded '/' is exactly the mistake that
+ * broke an earlier subpath deploy: assets 404 and the PWA refuses to install
+ * because its start_url sits outside its scope. If this app is ever hosted under
+ * a subpath, set BASE_PATH=/some/path/ rather than editing code.
  */
 const BASE = process.env.BASE_PATH ?? '/';
 
@@ -40,7 +40,7 @@ export default defineConfig({
         theme_color: '#0F766E',
         categories: ['health', 'medical', 'lifestyle'],
         icons: [
-          // Base-aware. An absolute "/icon-192.png" 404s on GitHub Pages, and a
+          // Base-aware. An absolute "/icon-192.png" 404s on a subpath host, and a
           // manifest whose icons do not resolve means the PWA silently refuses
           // to install — no error the user would ever see.
           { src: `${BASE}icon-192.png`, sizes: '192x192', type: 'image/png' },
@@ -50,8 +50,7 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,woff2,json}'],
-        // Must sit under BASE or the service worker serves the wrong document
-        // for the app on GitHub Pages.
+        // Derived from BASE so a subpath host cannot serve the wrong document.
         navigateFallback: `${BASE}index.html`,
         // Rural first load has to survive a dropped connection, so a failed
         // navigation lands on an offline page that explains what still works

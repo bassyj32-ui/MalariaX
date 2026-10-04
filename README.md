@@ -177,8 +177,12 @@ project from any other app; do not reuse credentials):
 
 ### AI endpoint
 
-`/api/ask` is a Vercel Edge Function. Set the key server-side — never with a
-`VITE_` prefix, which would inline it into the browser bundle:
+`/api/ask` is a Vercel Edge Function and is already deployed. Until a key is
+present it returns `503 assistant not configured`, and the Ask screen falls back
+to its curated offline answers rather than showing an error.
+
+Set the key server-side — never with a `VITE_` prefix, which would inline it
+into the browser bundle where anyone can read it:
 
 ```bash
 vercel env add DEEPSEEK_API_KEY production
@@ -187,6 +191,33 @@ vercel env add DEEPSEEK_API_KEY production
 ### Weather
 
 Open-Meteo needs no key. Nothing to configure.
+
+---
+
+## Deployment
+
+**Live: <https://malaria-x-ruby.vercel.app>**
+
+Hosted on Vercel, connected to this repository. Every push to `main` deploys
+automatically — no manual step and no local publish. Vercel detects Vite and
+runs `npm run build`; it serves `api/ask.ts` at `/api/ask` as an Edge Function
+without extra configuration.
+
+Environment variables, set in **Vercel → Settings → Environment Variables**:
+
+| Variable | Required? | Purpose |
+|---|---|---|
+| `DEEPSEEK_API_KEY` | For live AI Q&A | Server-side only. **Must not** carry a `VITE_` prefix. |
+| `VITE_SUPABASE_URL` | Optional | Community case counts. The risk map works without it. |
+| `VITE_SUPABASE_ANON_KEY` | Optional | Same. |
+
+Everything else — symptom assessment, badges, offline reporting and the regional
+risk map — needs no environment variables at all.
+
+If this is ever hosted under a subpath, build with `BASE_PATH=/some/path/`
+rather than editing code. A hardcoded `/` is what silently broke the first
+subpath deploy: assets 404 and the PWA refuses to install because its icons do
+not resolve.
 
 ---
 
