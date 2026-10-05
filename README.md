@@ -289,9 +289,17 @@ needs syncing.
 ## Before launch
 
 - [ ] **Amharic medical review.** `src/i18n/am.json` (`result.*`, `assess.*`) and
-      the `FALLBACK` answers in `src/lib/ai.ts`. Marked `NEEDS CLINICIAN REVIEW`.
+      the `FALLBACK` answers in `src/lib/ai.ts`. The fallbacks are marked
+      `NEEDS CLINICIAN REVIEW` in the source; the Amharic strings are tracked
+      by this checklist only.
 - [ ] **Verify the RLS SQL against a live project.** Confirm anon-key REST calls
       to `/rest/v1/reports` return nothing, and that suppression behaves.
+      Static checks for this live in `src/test/rls.test.ts` and run in CI, but
+      they cannot prove the policies behave as written — only a live project
+      can. Specifically confirm `region_trends_public` returns rows: it reads
+      `reports` through `security_definer` (see the comment in
+      `0002_rls_and_views.sql`), and a view that grants access while
+      returning nothing is the failure mode that is easiest to miss.
 - [ ] **Seed `risk_snapshots`** or the Data tab will show "not enough reports".
       No client can write this table — it is written server-side.
 - [ ] **Emergency number.** Copy references 991 (Ethiopia). Confirm and consider

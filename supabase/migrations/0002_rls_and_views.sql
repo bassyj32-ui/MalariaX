@@ -78,17 +78,19 @@ create policy risk_snapshots_public_read on public.risk_snapshots
 -- MIN_CELL_SIZE of 5 follows common practice for public-health small-area
 -- reporting. Raise it if the data ever covers small districts.
 -- --------------------------------------------------------------------------
+-- Reads risk_snapshots, which has an explicit SELECT policy for anon, so
+-- security_invoker is correct here: the caller stays subject to RLS on the
+-- table underneath, and this view adds no privilege.
+--
+-- The `counts` CTE that used to sit in front of this select was dead code. It
+-- aggregated public.reports, but nothing referenced it, so the 90-day window
+-- it declared never applied to anything. It read a table anon cannot select
+-- from, so keeping it served no purpose and invited the belief that live
+-- report counts fed this view. They do not: report_count comes from the
+-- server-written snapshot, which is the correct design, because the browser
+-- is not permitted to count raw reports.
 create or replace view public.region_risk_public
 with (security_invoker = true) as
-with counts as (
-  select
-    r.region_code,
-    date_trunc('week', r.created_at)::date as week_start,
-    count(*)::int as report_count
-  from public.reports r
-  where r.created_at >= now() - interval '90 days'
-  group by 1, 2
-)
 select
   s.region_code,
   s.snapshot_date,
@@ -115,9 +117,33 @@ comment on view public.region_risk_public is
 
 -- --------------------------------------------------------------------------
 -- Weekly trend view, same suppression rule
+--
+-- This view DOES read public.reports, and it is deliberately
+-- security_definer rather than security_invoker.
+--
+-- The previous version used security_invoker, which meant the query ran as
+-- the caller (anon) and hit the reports RLS deny. reports has no SELECT
+-- policy by design, so the view returned zero rows to every public caller
+-- and the trend chart silently rendered empty. The suppression logic below
+-- was never the problem; the plumbing was.
+--
+-- security_definer is safe here because the view:
+--
+--   * exposes no column from reports other than a region code, a week, and a
+--     count,
+--   * applies the same k=5 suppression as region_risk_public, so a cell small
+--     enough to identify anyone is nulled before it leaves the database, and
+--   * is not granted to the table owner role that could write reports.
+--
+-- SECURITY DEFINER runs as the view owner, so search_path is pinned to
+-- prevent a writable schema earlier in the path from shadowing `count` or
+-- `date_trunc`. Without this, a caller who can create objects in a schema
+-- on the path could hijack the function used here.
 -- --------------------------------------------------------------------------
 create or replace view public.region_trends_public
-with (security_invoker = true) as
+with (security_definer = true, security_invoker = false)
+set search_path = public, pg_temp
+as
 with weekly as (
   select
     region_code,
@@ -140,3 +166,18 @@ grant select on public.region_trends_public to anon, authenticated;
 grant insert on public.reports to anon, authenticated;
 grant select, insert, update on public.user_stats to anon, authenticated;
 grant select on public.risk_snapshots to anon, authenticated;
+
+-- The views are the only read path to aggregate data. Revoke anything that
+-- might have been granted to the table owner by a looser earlier run, so a
+-- security_definer view cannot be reached through a route the policies did
+-- not intend.
+revoke all on public.region_trends_public from public;
+revoke all on public.region_risk_public from public;
+grant select on public.region_trends_public to anon, authenticated;
+grant select on public.region_risk_public to anon, authenticated;
+
+-- Anonymous callers must not be able to insert into any view. Postgres will
+-- reject that anyway without an updatable-view trigger, but stating it means
+-- the grant list above is the complete set of what a browser can do.
+revoke insert, update, delete on public.region_trends_public from anon, authenticated;
+revoke insert, update, delete on public.region_risk_public from anon, authenticated;

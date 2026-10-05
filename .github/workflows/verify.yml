@@ -1,0 +1,45 @@
+name: Verify
+
+# Typecheck, unit and render suites, and a production build.
+#
+# There was no CI on this repository. The test suite existed and the README
+# described it in detail, but nothing ran it on push, so a regression in the
+# safety-critical maths would have been found by whoever hit it in the field.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build
+        # Built before the tests so a type error fails here with a clear
+        # message rather than surfacing as a confusing test failure.
+        run: npm run build
+
+      - name: Test
+        # The dist artifact checks assert properties of the real build — the
+        # service worker manifest scope, icon sizes, ASCII-only manifest name.
+        # They self-skip when there is no dist, so the build has to run first.
+        run: npm test
