@@ -5,6 +5,7 @@ import { AskScreen } from './features/AskScreen';
 import { ReportScreen } from './features/ReportScreen';
 import { Banner, Card, IconArrow, IconAward, IconBack, IconCheck, IconMap, IconReport, IconShield, Skeleton } from './components/ui';
 import { TopBar } from './components/TopBar';
+import { InstallPrompt } from './components/InstallPrompt';
 import { pendingCount, startAutoSync, syncQueue } from './lib/offline';
 import { useApp, type TabKey } from './store/app';
 import './styles/global.css';
@@ -93,6 +94,10 @@ export default function App() {
           </Banner>
         </div>
       ) : null}
+
+      {/* Only renders once the browser reports the app is installable, or for
+          iOS where it cannot be scripted. */}
+      <InstallPrompt />
     </div>
   );
 }

@@ -3,6 +3,18 @@
     "name": "MalariaX",
     "tagline": "Know your risk. Protect your community."
   },
+  "install": {
+    "title": "Install MalariaX",
+    "body": "Put MalariaX on your home screen. It opens like an app, and it works when there is no network.",
+    "action": "Add to home screen",
+    "notNow": "Not now",
+    "iosHint": "On iPhone: tap the Share button, then Add to Home Screen.",
+    "reasons": [
+      "Opens full screen, no browser address bar",
+      "Works offline — symptom checks and reports do not need a connection",
+      "One tap to your language, in Amharic or English"
+    ]
+  },
   "nav": {
     "check": "Check",
     "report": "Report",
