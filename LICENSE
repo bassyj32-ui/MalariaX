@@ -19,26 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----
-
-NOTE ON THE CLINICAL CONTENT
-
-The MIT licence covers the source code only. It does not grant any warranty,
-and specifically does not certify the clinical accuracy of the Amharic
-medical strings in src/i18n/am.json or the fallback answers in src/lib/ai.ts.
-The FALLBACK answers are marked NEEDS CLINICIAN REVIEW in the source; the
-Amharic medical strings (result.* and assess.*) are not, and are identified
-only by the README's before-launch checklist.
-
-The risk model in src/lib/risk.ts and src/lib/regionalRisk.ts is a
-transparent weighted model with seeded priors, not measured case rates. A
-high-risk verdict is a prompt to seek care, never a diagnosis.
-
-The underlying guidance should stay attributable to WHO and the Ethiopian
-Ministry of Health. Cite them; do not restate their protocols as this
-app's own.
-
-Anyone deploying this software for use in a clinical setting is responsible
-for independent verification by a qualified clinician, and does so at their
-own risk.

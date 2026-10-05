@@ -1,5 +1,15 @@
 # MalariaX
 
+> ### ⚠️ Not clinically verified
+>
+> The Amharic medical strings have not been reviewed by a qualified clinician,
+> and the risk model's `caseWeight` values are **seeded priors, not measured
+> case rates**. Every result must be checked against a current national
+> protocol or the WHO guideline before it informs a real patient's care.
+>
+> This app **does not diagnose malaria**. It is a reference aid, not a source
+> of truth. See [Before launch](#before-launch) for what is still outstanding.
+
 **Know your risk. Protect your community.**
 
 A free, offline-capable Progressive Web App that helps people in Ethiopia and
@@ -310,8 +320,27 @@ needs syncing.
 
 ## Licence
 
-MIT. Public domain in practice — the intent is that Ethiopian health workers and
-the Ministry of Health can read, fork and deploy this.
+**Code: MIT** — see [LICENSE](LICENSE).
 
-The underlying guidance should stay attributable to WHO and the Ethiopian
-Ministry of Health. Cite them, do not restate their protocols as this app's own.
+**Clinical content: CC BY-SA 4.0** — see [LICENCE-CONTENT.md](LICENCE-CONTENT.md).
+That covers the Amharic and English strings, the AI fallback answers, the
+danger-sign rule set, the risk weights and the database policies.
+
+The split is deliberate. ShareAlike exists so a clinic or the Ministry of
+Health can translate the Amharic strings or adapt a band to a local formulary
+without open-sourcing their entire stack — while any distributed adaptation has
+to stay open, so the improvements cannot be quietly closed away. Attribution
+matters because the underlying guidance belongs to WHO and the Ethiopian
+Ministry of Health: cite them, do not restate their protocols as this app's
+own.
+
+### What the licence does not do
+
+**It does not certify accuracy.** The clinical content is unreviewed — the
+Amharic medical strings have not been checked by a qualified clinician, and
+the risk model's `caseWeight` values are **seeded priors, not measured case
+rates**. See *Honest limitations* above and the *Before launch* checklist for
+what is still outstanding. Licensing content does not verify it.
+
+Anyone deploying this for use in a clinical setting is responsible for
+independent verification, and does so at their own risk.
